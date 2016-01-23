@@ -42,6 +42,6 @@ export function loop()
     for (let name in Game.creeps)
     {
         let creep = Game.creeps[name];
-        actor.work(creep);
+        if (!creep.spawning) actor.work(creep);
     }
 }
