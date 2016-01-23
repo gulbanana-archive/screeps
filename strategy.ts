@@ -67,21 +67,39 @@ export function planSpawns(): Spec[]
     let spawns: Spec[] = [];
     
     let harvesters = countCreeps('harvest');
-    while (harvesters < 4)
+    while (harvesters < 3)
     {
         spawns.push(harvester(mine, home));
         harvesters++;
     }
         
     let upgraders = countCreeps('upgrade');
-    while (upgraders < 2)
+    while (upgraders < 1)
+    {
+        spawns.push(upgrader(home));
+        upgraders++;
+    }
+    
+    while (harvesters < 3)
+    {
+        spawns.push(harvester(mine, home));
+        harvesters++;
+    }
+    
+    let builders = countCreeps('build');
+    while (builders < 1)
+    {
+        spawns.push(builder(home));
+        builders++;
+    }
+     
+    while (upgraders < 3)
     {
         spawns.push(upgrader(home));
         upgraders++;
     }
         
-    let builders = countCreeps('build');
-    while (builders < 2)
+    while (builders < 3)
     {
         spawns.push(builder(home));
         builders++;
