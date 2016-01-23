@@ -1,7 +1,7 @@
 /**
  * Creeps are your units. Creeps can move, harvest energy, construct structures, attack another creeps, and perform other actions.
  */
-interface Creep
+interface Creep extends Owned
 {
     id: string;
     
@@ -14,11 +14,14 @@ interface Creep
     hits: number;
     hitsMax: number;
     memory: any;
-    my: boolean;
     name: string;
-    owner: { username: string; };
     spawning: boolean;
     ticksToLive: number;
+    
+    /**
+     * Build a structure at the target construction site using carried energy. Needs WORK and CARRY body parts. The target has to be within 3 squares range of the creep.
+     */
+    build(target: ConstructionSite): number;
     
     /**
      * Find the optimal path to the target within the same room and move to it. A shorthand to consequent calls of pos.findPathTo() and move() methods. If the target is in another room, then the corresponding exit will be used as a target. Needs the MOVE body part.

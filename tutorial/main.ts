@@ -1,9 +1,20 @@
 import harvester from './harvester';
+import builder from './builder';
 
 export function loop() 
 {
-    for (let creepName in Game.creeps)
+    for (let name in Game.creeps)
     {
-        harvester(Game.creeps[creepName]);
+        var creep = Game.creeps[name];
+        switch (creep.memory.role)
+        {
+            case 'harvester':
+                harvester(creep);
+                break;
+                
+            case 'builder':
+                builder(creep);
+                break;
+        }
     }
 }

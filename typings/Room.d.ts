@@ -8,5 +8,5 @@ interface FindOpts
  */
 interface Room
 {
-    find(type: number, opts?: FindOpts): Source[];  
+    find(type: number, opts?: FindOpts): (Source|ConstructionSite)[];    
 }

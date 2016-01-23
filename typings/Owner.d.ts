@@ -1,0 +1,4 @@
+interface Owner
+{
+    username: string;
+}
