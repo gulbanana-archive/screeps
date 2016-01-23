@@ -5,6 +5,7 @@ declare const RESOURCE_ENERGY: string;
 
 declare const FIND_SOURCES: number;
 declare const FIND_CONSTRUCTION_SITES: number;
+declare const FIND_HOSTILE_CREEPS: number;
 
 declare var Game: Game;
 declare var Memory: Memory;

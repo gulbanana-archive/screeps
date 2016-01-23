@@ -19,6 +19,11 @@ interface Creep extends Owned
     ticksToLive: number;
     
     /**
+     * Attack another creep or structure in a short-ranged attack. Needs the ATTACK body part. If the target is inside a rampart, then the rampart is attacked instead. The target has to be at adjacent square to the creep. If the target is a creep with ATTACK body parts and is not inside a rampart, it will automatically hit back at the attacker.
+     */
+    attack(target: Creep): number;
+    
+    /**
      * Build a structure at the target construction site using carried energy. Needs WORK and CARRY body parts. The target has to be within 3 squares range of the creep.
      */
     build(target: ConstructionSite): number;

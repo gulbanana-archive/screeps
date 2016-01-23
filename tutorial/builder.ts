@@ -1,10 +1,8 @@
 export default function(creep: Creep) 
 {
-    let spawn = Game.spawns['Spawn1'];
-    let sites = creep.room.find(FIND_CONSTRUCTION_SITES);
-    
     if(creep.carry.energy == 0) 
     {
+        let spawn = Game.spawns['Spawn1'];
         if(spawn.transferEnergy(creep) == ERR_NOT_IN_RANGE) 
         {
             creep.moveTo(spawn);				
@@ -12,12 +10,12 @@ export default function(creep: Creep)
     }
     else
     {
-        let targets = creep.room.find(FIND_CONSTRUCTION_SITES);
-        if (targets.length)
+        let sites = creep.room.find(FIND_CONSTRUCTION_SITES);
+        if (sites.length)
         {
-            if (creep.build(targets[0] as ConstructionSite) == ERR_NOT_IN_RANGE)
+            if (creep.build(sites[0] as ConstructionSite) == ERR_NOT_IN_RANGE)
             {
-                creep.moveTo(targets[0]);					
+                creep.moveTo(sites[0]);					
             }
         }
     }
