@@ -134,7 +134,7 @@ export function planSpawns(): Spec[]
         builders++;
     }
 
-    console.log("planned spawns: " + _.map(spawns, s => s.memory.was ? s.memory.was : s.memory.act));
+    console.log("planned spawns: " + _.map(spawns, s => (s.memory.was ? s.memory.was : s.memory.act) + '@' + s.cost + ' '));
 
     return spawns;
 }
