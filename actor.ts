@@ -1,9 +1,9 @@
 import _ = require('lodash');
 
-let actions: {[key: string]: (creep: Creep) => void} = {};
+let actors: {[key: string]: (creep: Creep) => void} = {};
 
 //make progress on the nearest construction site
-actions['build'] = function(creep: Creep)
+actors['build'] = function(creep: Creep)
 {    
     let site = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES) as ConstructionSite;
     
@@ -21,8 +21,7 @@ actions['build'] = function(creep: Creep)
                 break;
                 
             case ERR_NOT_ENOUGH_RESOURCES:
-                creep.memory.become = 'refill';
-                creep.memory.then = 'upgrade';
+                become(creep, 'refill');
                 break;
                 
             case ERR_INVALID_TARGET:
@@ -43,14 +42,13 @@ actions['build'] = function(creep: Creep)
 };
 
 //harvest an energy source 
-actions['harvest'] = function(creep: Creep)
+actors['harvest'] = function(creep: Creep)
 {
-    let source = Game.getObjectById(creep.memory.source) as Source;
+    let source = Game.getObjectById(creep.memory['source']) as Source;
     
     if (creep.carry.energy == creep.carryCapacity)
     {
-        creep.memory.become = 'store';
-        creep.memory.then = 'harvest';
+        become(creep, 'store');
         return;
     }
     
@@ -63,7 +61,7 @@ actions['harvest'] = function(creep: Creep)
             
         case ERR_INVALID_TARGET:
             console.log('harvest: source invalid. discovering new source...');
-            creep.memory.source = creep.pos.findClosestByPath(FIND_SOURCES).id;
+            creep.memory['source'] = creep.pos.findClosestByPath(FIND_SOURCES).id;
             break;
             
         case ERR_BUSY:
@@ -79,9 +77,9 @@ actions['harvest'] = function(creep: Creep)
 }
 
 //refill stored energy and return to some other action 
-actions['refill'] = function(creep: Creep)
+actors['refill'] = function(creep: Creep)
 {    
-    let storage = Game.getObjectById(creep.memory.storage) as Positioned&Energised;
+    let storage = Game.getObjectById(creep.memory['storage']) as Positioned&Energised;
     
     switch (storage.transferEnergy(creep)) 
     {
@@ -93,20 +91,20 @@ actions['refill'] = function(creep: Creep)
             if (creep.carry.energy < creep.carryCapacity)
             {
                 console.log("refill: couldn't get enough energy, becoming harvester");
-                creep.memory.become = 'harvest';
+                become(creep, 'harvest');
             }
             else
             {
-                creep.memory.become = creep.memory.then;
+                recall(creep);
             }
             break;				
     }
 }
 
 //transfer stored energy return to some other action 
-actions['store'] = function(creep: Creep)
+actors['store'] = function(creep: Creep)
 {    
-    let storage = Game.getObjectById(creep.memory.storage) as Creep | Spawn | Structure;
+    let storage = Game.getObjectById(creep.memory['storage']) as Creep | Spawn | Structure;
     
     switch (creep.transfer(storage, RESOURCE_ENERGY))
     {
@@ -115,19 +113,18 @@ actions['store'] = function(creep: Creep)
             break;
             
         case OK:
-            creep.memory.become = creep.memory.then;
+            recall(creep);
             break;
     } 
 }
 
 //upgrade the room control level
-actions['upgrade'] = function(creep: Creep)
+actors['upgrade'] = function(creep: Creep)
 {    
     switch (creep.upgradeController(creep.room.controller))
     {
         case ERR_NOT_ENOUGH_RESOURCES:
-            creep.memory.become = 'refill';
-            creep.memory.then = 'upgrade';
+            become(creep, 'refill');
             break;
             
         case ERR_NOT_IN_RANGE:
@@ -136,4 +133,20 @@ actions['upgrade'] = function(creep: Creep)
     }
 }
 
-export default actions;
+export function work(creep: Creep)
+{
+    actors[creep.memory.act](creep);
+}
+
+export function become(creep: Creep, newActor: string)
+{
+    creep.memory.age = 0;
+    creep.memory.was = creep.memory.act;
+    creep.memory.act = newActor;
+}
+
+export function recall(creep: Creep)
+{
+    creep.memory.age = 0;
+    creep.memory.act = creep.memory.was;
+}

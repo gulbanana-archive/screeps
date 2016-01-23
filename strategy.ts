@@ -1,7 +1,9 @@
+import * as actor from './actor';
+
 export interface Spec
 {
     body: string[];
-    memory: {become: string};
+    memory: State;
     cost: number;
 }
 
@@ -30,34 +32,58 @@ function countCreeps(role: string): number
     for (let name in Game.creeps)
     {
         let creep = Game.creeps[name];
-        if (creep.memory.become == role || creep.memory.then == role) i++;
+        if (creep.memory.act == role || creep.memory.was == role) i++;
     }
     
     return i;
 }
 
+function findCreeps(role: string): Creep[]
+{
+    let creeps: Creep[] = [];
+    
+    for (let name in Game.creeps)
+    {
+        let creep = Game.creeps[name];
+        if (creep.memory.act == role || creep.memory.was == role) creeps.push(creep);
+    }
+    
+    return creeps;
+}
+
 //enacts construction directives
 function builder(storage: Positioned&Energised&Identified) : Spec
 {    
-    let body = [MOVE, WORK, WORK, CARRY];
-    let memory = {become: 'refill', then: 'build', storage: storage.id};
+    let body = [MOVE, WORK, CARRY];
+    let memory = {age: 0, act: 'refill', was: 'build', storage: storage.id};
     return { body, memory, cost: getCost(body) };
 }
 
 //harvests an energy source and transfers its energy to some storage 
 function harvester(source: Source, storage: Creep | Spawn | Structure) : Spec
 {    
-    let body = [MOVE, MOVE, WORK, CARRY, CARRY];
-    let memory = {become: 'harvest', source: source.id, storage: storage.id};
+    let body = [MOVE, WORK, CARRY];
+    let memory = {age: 0, act: 'harvest', source: source.id, storage: storage.id};
     return { body, memory, cost: getCost(body) };
 }
 
 //transfers energy from a source to the room controller
 function upgrader(storage: Positioned&Energised&Identified) : Spec
 {    
-    let body = [MOVE, WORK, WORK, CARRY];
-    let memory = {become: 'refill', then: 'upgrade', storage: storage.id};
+    let body = [MOVE, WORK, CARRY];
+    let memory = {age: 0, act: 'refill', was: 'upgrade', storage: storage.id};
     return { body, memory, cost: getCost(body) };
+}
+
+export function modifyOrders()
+{
+    let waitingForRefills = findCreeps('refill');
+    
+    if (waitingForRefills.length > 2)
+    {
+        console.log("too many refills waiting, converting to harvester");
+        actor.become(waitingForRefills[0], 'harvest');
+    }
 }
 
 export function planSpawns(): Spec[]
@@ -67,13 +93,17 @@ export function planSpawns(): Spec[]
     let spawns: Spec[] = [];
     
     let harvesters = countCreeps('harvest');
+    let upgraders = countCreeps('upgrade');
+    let builders = countCreeps('build');
+        
+    console.log("current creeps: " + harvesters + " harvest, " + upgraders + " upgrade, " + builders + " build");
+    
     while (harvesters < 3)
     {
         spawns.push(harvester(mine, home));
         harvesters++;
     }
         
-    let upgraders = countCreeps('upgrade');
     while (upgraders < 1)
     {
         spawns.push(upgrader(home));
@@ -86,7 +116,6 @@ export function planSpawns(): Spec[]
         harvesters++;
     }
     
-    let builders = countCreeps('build');
     while (builders < 1)
     {
         spawns.push(builder(home));
@@ -104,6 +133,8 @@ export function planSpawns(): Spec[]
         spawns.push(builder(home));
         builders++;
     }
+
+    console.log("planned spawns: " + _.map(spawns, s => s.memory.was ? s.memory.was : s.memory.act));
 
     return spawns;
 }

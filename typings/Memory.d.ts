@@ -1,4 +1,4 @@
 interface Memory
 {
-    creeps: { [key: string]: any; };
+    creeps: { [key: string]: State; };
 }

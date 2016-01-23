@@ -1,5 +1,5 @@
 import * as strategy from './strategy';
-import actors from './actors';
+import * as actor from './actor';
 import _ = require('lodash');
 
 function executeSpawns(specs: strategy.Spec[])
@@ -31,15 +31,6 @@ function executeSpawns(specs: strategy.Spec[])
     });
 }
 
-function work()
-{
-    for (let name in Game.creeps)
-    {
-        let creep = Game.creeps[name];
-        actors[creep.memory.become](creep);
-    }
-}
-
 export function loop() 
 {
     var plan = strategy.planSpawns();
@@ -49,6 +40,6 @@ export function loop()
     for (let name in Game.creeps)
     {
         let creep = Game.creeps[name];
-        actors[creep.memory.become](creep);
+        actor.work(creep);
     }
 }
