@@ -4,9 +4,11 @@
 interface Source
 {
     id: string;
+
+    room: Room;
+    pos: RoomPosition;
+
     energy: number;
     energyCapacity: number;
     ticksToRegeneration: number;
-    pos: RoomPosition;
-    room: Room;
 }
