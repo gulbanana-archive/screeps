@@ -77,11 +77,11 @@ function upgrader(storage: Positioned&Energised&Identified) : Spec
 
 export function modifyOrders()
 {
-    let waitingForRefills = findCreeps('refill');
+    let waitingForRefills = _.filter(findCreeps('refill'), c => c.memory.age > 20);
     
     if (waitingForRefills.length > 2)
     {
-        console.log("too many refills waiting, converting to harvester");
+        console.log("too many refills waiting, converting one to harvester");
         actor.become(waitingForRefills[0], 'harvest');
     }
 }
@@ -96,9 +96,9 @@ export function planSpawns(): Spec[]
     let upgraders = countCreeps('upgrade');
     let builders = countCreeps('build');
         
-    console.log("current creeps: " + harvesters + " harvest, " + upgraders + " upgrade, " + builders + " build");
+    let knownCreeps = harvesters + " harvest, " + upgraders + " upgrade, " + builders + " build";
     
-    while (harvesters < 3)
+    while (harvesters < 1)
     {
         spawns.push(harvester(mine, home));
         harvesters++;
@@ -133,8 +133,16 @@ export function planSpawns(): Spec[]
         spawns.push(builder(home));
         builders++;
     }
+    
+    while (harvesters < 5)
+    {
+        spawns.push(harvester(mine, home));
+        harvesters++;
+    }
 
-    console.log("planned spawns: " + _.map(spawns, s => (s.memory.was ? s.memory.was : s.memory.act) + '@' + s.cost + ' '));
+    let plannedSpawns = _.map(spawns, s => (s.memory.was ? s.memory.was : s.memory.act) + '@' + s.cost);
+    
+    Memory.plan = {creeps: knownCreeps, spawns: plannedSpawns};
 
     return spawns;
 }

@@ -26,4 +26,4 @@ declare const HEAL: string;
 declare const TOUGH: string;
 
 declare var Game: Game;
-declare var Memory: Memory;
+declare var Memory: any;

@@ -81,23 +81,20 @@ actors['refill'] = function(creep: Creep)
 {    
     let storage = Game.getObjectById(creep.memory['storage']) as Positioned&Energised;
     
-    switch (storage.transferEnergy(creep)) 
+    let result = storage.transferEnergy(creep);
+    switch (result) 
     {
         case ERR_NOT_IN_RANGE:
             creep.moveTo(storage);
             break;
             
         case OK:
-            if (creep.carry.energy < creep.carryCapacity)
-            {
-                console.log("refill: couldn't get enough energy, becoming harvester");
-                become(creep, 'harvest');
-            }
-            else
-            {
-                recall(creep);
-            }
-            break;				
+            if (creep.carry.energy == creep.carryCapacity) recall(creep);
+            break;		
+            
+        default:
+            console.log('refill: unexpected error ' + result);
+            break;            
     }
 }
 
