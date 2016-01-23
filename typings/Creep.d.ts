@@ -1,12 +1,9 @@
 /**
  * Creeps are your units. Creeps can move, harvest energy, construct structures, attack another creeps, and perform other actions.
  */
-interface Creep extends Owned
+interface Creep extends Owned, Positioned
 {
     id: string;
-    
-    room: Room;
-    pos: RoomPosition;
     
     carry: { energy: number; power?: number };
     carryCapacity: number;
