@@ -1,7 +1,5 @@
 interface Structure extends Owned, Positioned
 {
-    id: string;
-    
     hits: number;
     hitsMax: number;
     structureType: string;

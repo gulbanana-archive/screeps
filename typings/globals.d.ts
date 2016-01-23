@@ -3,6 +3,7 @@ declare const ERR_NOT_OWNER: number;
 declare const ERR_NAME_EXISTS: number;
 declare const ERR_BUSY: number;
 declare const ERR_NOT_ENOUGH_ENERGY: number;
+declare const ERR_NOT_ENOUGH_RESOURCES: number;
 declare const ERR_INVALID_TARGET: number;
 declare const ERR_FULL: number;
 declare const ERR_NOT_IN_RANGE: number;

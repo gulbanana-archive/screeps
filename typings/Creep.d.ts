@@ -3,8 +3,6 @@
  */
 interface Creep extends Owned, Positioned
 {
-    id: string;
-    
     carry: { energy: number; power?: number };
     carryCapacity: number;
     fatigue: number;

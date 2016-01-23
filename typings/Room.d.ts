@@ -11,5 +11,8 @@ interface Room
     name: string;
     storage: Structure;
     
+    /**
+     * Find all objects of the specified type in the room.
+     */
     find(type: number, opts?: { filter: any }): (Creep | ConstructionSite | Source)[];    
 }
