@@ -88,8 +88,10 @@ actors['refill'] = function(creep: Creep)
             creep.moveTo(storage);
             break;
             
+        case ERR_FULL:
+            recall(creep);
+            
         case OK:
-            if (creep.carry.energy == creep.carryCapacity) recall(creep);
             break;		
             
         default:
