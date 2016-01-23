@@ -22,6 +22,7 @@ actions['build'] = function(creep: Creep)
                 
             case ERR_NOT_ENOUGH_RESOURCES:
                 creep.memory.become = 'refill';
+                creep.memory.then = 'upgrade';
                 break;
                 
             case ERR_INVALID_TARGET:
@@ -49,6 +50,7 @@ actions['harvest'] = function(creep: Creep)
     if (creep.carry.energy == creep.carryCapacity)
     {
         creep.memory.become = 'store';
+        creep.memory.then = 'harvest';
         return;
     }
     
@@ -88,7 +90,15 @@ actions['refill'] = function(creep: Creep)
             break;
             
         case OK:
-            creep.memory.become = creep.memory.then;
+            if (creep.carry.energy < creep.carryCapacity)
+            {
+                console.log("refill: couldn't get enough energy, becoming harvester");
+                creep.memory.become = 'harvest';
+            }
+            else
+            {
+                creep.memory.become = creep.memory.then;
+            }
             break;				
     }
 }
@@ -117,6 +127,7 @@ actions['upgrade'] = function(creep: Creep)
     {
         case ERR_NOT_ENOUGH_RESOURCES:
             creep.memory.become = 'refill';
+            creep.memory.then = 'upgrade';
             break;
             
         case ERR_NOT_IN_RANGE:

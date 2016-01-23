@@ -48,7 +48,7 @@ function builder(storage: Positioned&Energised&Identified) : Spec
 function harvester(source: Source, storage: Creep | Spawn | Structure) : Spec
 {    
     let body = [MOVE, MOVE, WORK, CARRY, CARRY];
-    let memory = {become: 'harvest', then: 'harvest', source: source.id, storage: storage.id};
+    let memory = {become: 'harvest', source: source.id, storage: storage.id};
     return { body, memory, cost: getCost(body) };
 }
 
