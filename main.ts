@@ -1,12 +1,12 @@
-import * as strategy from './strategy';
-import * as actor from './actor';
-import * as util from './util';
 import _ = require('lodash');
+import * as util from './util';
+import * as actor from './actor';
+import * as strategy from './strategy';
 
 function assignWorkers(room: Room, assignments: string[])
 {
-    let workers = _.filter(room.find<Creep>(FIND_MY_CREEPS), util.wasOriginally(['upgrade', 'build', 'repair']))
-    let existingAssignments = workers.map(util.originalRole).sort();
+    let workers = _.filter(room.find<Creep>(FIND_MY_CREEPS), actor.wasOriginally(['upgrade', 'build', 'repair']))
+    let existingAssignments = workers.map(actor.originalRole).sort();
     
     if (_.isEqual(assignments.sort(), existingAssignments.sort())) return;
  
@@ -20,7 +20,7 @@ function assignWorkers(room: Room, assignments: string[])
     {
         for (let i = 0; i < (counts[g] - (existingCounts[g] ? existingCounts[g] : 0)); i++)
         {
-            let candidate = _.filter(workers, util.wasOriginally(shrink))[0];
+            let candidate = _.filter(workers, actor.wasOriginally(shrink))[0];
             _.remove(workers, candidate);
             actor.reset(candidate, g);
         }
@@ -33,7 +33,7 @@ function spawnCreep(spawner: Spawn, spec: Spec)
             
     if (_.isString(result))
     {
-        console.log("spawn: creating " + util.originalRole(spec) + ' "' + result + '"');
+        console.log("spawn: creating " + actor.originalRole(spec) + ' "' + result + '"');
     }
     else
     {

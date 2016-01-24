@@ -1,4 +1,5 @@
 import * as util from './util';
+import * as actor from './actor';
 
 let segmentCosts: {[key: string]: number} = {};
 segmentCosts[MOVE] = 50;
@@ -28,7 +29,7 @@ class CSpec implements Spec
 
     toString()
     {
-        return util.originalRole(this) + '@' + this.cost;
+        return actor.originalRole(this) + '@' + this.cost;
     }
 }
 
@@ -82,7 +83,7 @@ function planWorkers(room: Room): string[]
     let result: string[] = [];
     
     let creeps = room.find<Creep>(FIND_MY_CREEPS);
-    let workers = _.size(_.filter(creeps, util.wasOriginally(['upgrade', 'build', 'repair'])));
+    let workers = _.size(_.filter(creeps, actor.wasOriginally(['upgrade', 'build', 'repair'])));
     let constructionSites = room.find<ConstructionSite>(FIND_CONSTRUCTION_SITES).length;
     
     if (workers > 0)
@@ -133,8 +134,8 @@ function planSpawns(room: Room): Spec[]
     
     let creeps = room.find<Creep>(FIND_MY_CREEPS);
     let sources = room.find<Source>(FIND_SOURCES); 
-    let harvesters = _.filter(creeps, util.wasOriginally(['harvest'])).length;
-    let workers = _.filter(creeps, util.wasOriginally(['upgrade', 'build', 'repair'])).length;
+    let harvesters = _.filter(creeps, actor.wasOriginally(['harvest'])).length;
+    let workers = _.filter(creeps, actor.wasOriginally(['upgrade', 'build', 'repair'])).length;
         
     let needHarvesters = sources.length * 3;
         
