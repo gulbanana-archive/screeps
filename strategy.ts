@@ -181,7 +181,7 @@ function planSpawns(room: Room): Spec[]
         harvesters++;
     }
     
-    if (harvesters > 5 && soldiers == 0)
+    while (soldiers * 5 <= harvesters)
     {
         spawns.push(soldier(room));
         soldiers++;

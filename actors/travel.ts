@@ -2,16 +2,18 @@ import * as actor from './_actor';
 
 export default function(creep: Creep)
 {
-    let target = creep.memory['travelTarget'];
+    let target = creep.memory['travel'] as RoomPosition;
     if (!target)
     {
         console.log('travel: no target');
+        creep.memory['travel'] = null;
+        actor.unbecome(creep);
         return;
     }
     
-    if (creep.room.name != target)
+    if (creep.pos.roomName != target.roomName)
     {    
-        let exit = Game.map.findExit(creep.room.name, target);
+        let exit = Game.map.findExit(creep.pos.roomName, target.roomName);
         switch (exit)
         {
             case ERR_NO_PATH:
@@ -26,8 +28,13 @@ export default function(creep: Creep)
         let exitPos = creep.pos.findClosestByPath<RoomPosition>(exit);
         creep.moveTo(exitPos);
     }
+    else if (creep.pos.x != target.x || creep.pos.y != target.y)
+    {
+        creep.moveTo(target.x, target.y);
+    }
     else
     {
+        creep.memory['travel'] = null;
         actor.unbecome(creep);
     }
 }
