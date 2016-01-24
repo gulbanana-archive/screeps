@@ -3,11 +3,9 @@ import * as actor from './actor';
 import * as util from './util';
 import _ = require('lodash');
 
-let home = Game.spawns['Spawn1'];
-
-function assignWorkers(assignments: string[])
+function assignWorkers(room: Room, assignments: string[])
 {
-    let workers = _.filter(Game.creeps, util.wasOriginally(['upgrade', 'build', 'repair']))
+    let workers = _.filter(room.find<Creep>(FIND_MY_CREEPS), util.wasOriginally(['upgrade', 'build', 'repair']))
     
     if (workers.length != assignments.length)
     {
@@ -49,7 +47,7 @@ function spawnCreep(spawner: Spawn, spec: Spec)
     }
 }
 
-function spawnCreeps(specs: Spec[])
+function spawnCreeps(home: Spawn, specs: Spec[])
 {
     let spawners = [home];
     let usedSpawners: Spawn[] = [];
@@ -78,9 +76,15 @@ function performRoles()
 
 export function loop() 
 {
-    let plan = strategy.plan(home.room);
+    Memory.plans = {};
     
-    assignWorkers(plan.workers);
-    spawnCreeps(plan.spawns);
+    for (let home of [Game.spawns['Spawn1']])
+    {
+        let roomPlan = strategy.plan(home.room);
+        Memory.plans[home.room.name] = roomPlan; 
+        assignWorkers(home.room, roomPlan.workers);
+        spawnCreeps(home, roomPlan.spawns);
+    }
+
     performRoles();
 }

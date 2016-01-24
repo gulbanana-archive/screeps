@@ -49,17 +49,6 @@ class CPlan implements Plan
     }
 }
 
-function iterateCreeps(): Creep[]
-{
-    let creeps: Creep[] = [];
-    for (let name in Game.creeps)
-    {
-        let creep = Game.creeps[name];
-        creeps.push(creep);
-    }
-    return creeps;
-}
-
 function harvester(source: Source) : Spec
 {    
     let capacity = util.calculateAvailableEnergy(source.room);
@@ -174,7 +163,5 @@ export function plan(room: Room): Plan
     let workers = planWorkers(room);
     let spawns = planSpawns(room);
     
-    let plan = new CPlan(spawns, workers);
-    Memory.plan = plan;
-    return plan;
+    return new CPlan(spawns, workers);
 }

@@ -1,5 +1,5 @@
 interface Memory
 {
     creeps: { [key: string]: State; };
-    plan: Plan;
+    plans: { [key: string]: Plan };
 }
