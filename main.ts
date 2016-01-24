@@ -76,7 +76,7 @@ function performRoles()
 
 export function loop() 
 {
-    if (!Memory.goals) Memory.goals = { colonise: null };
+    if (!Memory.goals) Memory.goals = { colonise: null, wallCap: 10000 };
     
     if (!Memory.plans) Memory.plans = {};
     

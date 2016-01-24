@@ -222,7 +222,7 @@ actors['repair'] = function(creep: Creep)
 {    
     if (!creep.memory['repairTarget'])
     {
-        let structures = creep.room.find<Structure>(FIND_STRUCTURES, {filter: (s: Structure) => s.hits && s.hitsMax});
+        let structures = creep.room.find<Structure>(FIND_STRUCTURES, {filter: (s: Structure) => s.hits && s.hitsMax && !(s.structureType == STRUCTURE_WALL && s.hits >= Memory.goals.wallCap)});
         let mostDamagedStructure = _.last(_.sortBy(structures, s => s.hitsMax - s.hits));
         if (mostDamagedStructure) 
         {

@@ -15,6 +15,7 @@ declare const ERR_NO_PATH: number;
 declare const RESOURCE_ENERGY: string;
 
 declare const STRUCTURE_EXTENSION: string;
+declare const STRUCTURE_WALL: string;
 
 declare const FIND_CONSTRUCTION_SITES: number;
 declare const FIND_HOSTILE_CREEPS: number;
