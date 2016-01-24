@@ -152,6 +152,15 @@ export function work(creep: Creep)
 
 export function become(creep: Creep, role: string)
 {
+    if (creep.memory.was == null)
+    {
+        creep.memory.was = [];
+    }
+    else if (_.isString(creep.memory.was))
+    {
+        creep.memory.was = [creep.memory.was as string];
+    }
+    
     if (_.keys(actors).indexOf(role) == -1)
     {
         console.log('no such role ' + role);
@@ -159,12 +168,21 @@ export function become(creep: Creep, role: string)
     }
     
     creep.memory.age = 0;
-    creep.memory.was = creep.memory.act;
+    (creep.memory.was as string[]).push(creep.memory.act);
     creep.memory.act = role;
 }
 
 export function unbecome(creep: Creep)
 {
+    if (creep.memory.was == null)
+    {
+        creep.memory.was = [];
+    }
+    else if (_.isString(creep.memory.was))
+    {
+        creep.memory.was = [creep.memory.was as string];
+    }
+    
     creep.memory.age = 0;
-    creep.memory.act = creep.memory.was;
+    creep.memory.act = (creep.memory.was as string[]).pop();
 }

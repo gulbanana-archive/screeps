@@ -36,7 +36,7 @@ function executeSpawns(specs: strategy.Spec[])
                         break;
                     
                     case ERR_BUSY:
-                        console log('spawn: already busy');
+                        console.log('spawn: already busy');
                         break;
                     
                     default:

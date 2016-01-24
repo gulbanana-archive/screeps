@@ -54,7 +54,7 @@ function harvester(source: Source) : Spec
     let capacity = calculateAvailableEnergy(source.room);
     let body = capacity >= 350 ? [MOVE, MOVE, MOVE, WORK, CARRY, CARRY] :
                                  [MOVE, MOVE, WORK, CARRY];
-    let memory = {age: 0, act: 'harvest', source: source.id};
+    let memory: State = {age: 0, act: 'harvest', was: [], source: source.id};
     return { body, memory, cost: getCost(body) };
 }
 
@@ -64,7 +64,7 @@ function worker(storage: Positioned&Energised&Identified) : Spec
     
     let body = capacity >= 400 ? [MOVE, MOVE, MOVE, WORK, WORK, CARRY] :
                                  [MOVE, MOVE, WORK, CARRY];
-    let memory = {age: 0, act: 'refill', was: 'upgrade', storage: storage.id};
+    let memory = {age: 0, act: 'refill', was: ['upgrade'], storage: storage.id};
     return { body, memory, cost: getCost(body) };
 }
 
@@ -78,8 +78,8 @@ function modifyRoles(room: Room, creeps: Creep[])
         actor.become(workersWaitingForRefills[0], 'harvest');
     }
     
-    let builders = _.filter(creeps, c => c.memory.act == 'build');
-    let upgraders = _.filter(creeps, c => c.memory.act == 'upgrade');
+    let builders = _.filter(creeps, c => c.memory.act == 'build' || c.memory.act == 'refill' && c.memory.was == 'build');
+    let upgraders = _.filter(creeps, c => c.memory.act == 'upgrade' || c.memory.act == 'refill' && c.memory.was == 'upgrade');
     
     // keep at least one upgrader
     if (builders.length && !upgraders.length)
