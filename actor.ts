@@ -115,6 +115,12 @@ actors['store'] = function(creep: Creep)
     let storage = spawns.concat(extensions).filter(s => s.energy < s.energyCapacity);
     let target = _.head(storage);
     
+    if (!target)
+    {
+        console.log('store: no targets');
+        return;
+    }
+    
     let result = creep.transfer(target, RESOURCE_ENERGY);
     switch (result)
     {
@@ -127,7 +133,7 @@ actors['store'] = function(creep: Creep)
             break;
             
         case ERR_FULL:
-            console.log('store: all targets full');
+            console.log('store: target full');
             break;
             
         case ERR_INVALID_TARGET:

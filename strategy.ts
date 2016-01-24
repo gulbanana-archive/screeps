@@ -52,7 +52,8 @@ function iterateCreeps(): Creep[]
 function harvester(source: Source) : Spec
 {    
     let capacity = calculateAvailableEnergy(source.room);
-    let body = capacity >= 350 ? [MOVE, MOVE, MOVE, WORK, CARRY, CARRY] :
+    let body = capacity >= 500 ? [MOVE, MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY] :
+               capacity >= 350 ? [MOVE, MOVE, MOVE, WORK, CARRY, CARRY] :
                                  [MOVE, MOVE, WORK, CARRY];
     let memory: State = {age: 0, act: 'harvest', was: [], source: source.id};
     return { body, memory, cost: getCost(body) };
@@ -62,7 +63,8 @@ function worker(storage: Positioned&Energised&Identified) : Spec
 {    
     let capacity = calculateAvailableEnergy(storage.room);
     
-    let body = capacity >= 400 ? [MOVE, MOVE, MOVE, WORK, WORK, CARRY] :
+    let body = capacity >= 500 ? [MOVE, MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY] :
+               capacity >= 400 ? [MOVE, MOVE, MOVE, WORK, WORK, CARRY] :
                                  [MOVE, MOVE, WORK, CARRY];
     let memory = {age: 0, act: 'refill', was: ['upgrade'], storage: storage.id};
     return { body, memory, cost: getCost(body) };
