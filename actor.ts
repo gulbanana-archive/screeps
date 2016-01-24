@@ -85,7 +85,6 @@ actors['harvest'] = function(creep: Creep)
             break;
         
         case ERR_NOT_ENOUGH_RESOURCES:
-            console.log('harvest: source is empty');
             if (creep.carry.energy > 0) reset(creep, 'upgrade');
             break;
         
