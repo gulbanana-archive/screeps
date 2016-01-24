@@ -76,15 +76,16 @@ function performRoles()
 
 export function loop() 
 {
-    if (!Memory.goals) Memory.goals = { colony: false };
+    if (!Memory.goals) Memory.goals = { colonise: null };
     
     if (!Memory.plans) Memory.plans = {};
     
-    if (Memory.goals.colony)
+    if (Memory.goals.colonise)
     {
-        if (Game.spawns['Spawn1'].createCreep([MOVE, MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY], 'Dora', {act: 'colonist'}) == OK)
+        Game.spawns['Spawn1'].createCreep([MOVE, MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY], 'Dora', {age: 0, act: 'colonist', was: [], travelTarget: Memory.goals.colonise});
+        if (Game.creeps['Dora'])
         {
-            Memory.goals.colony = false;
+            Memory.goals.colonise = null;
         }
     }
     
@@ -93,7 +94,7 @@ export function loop()
         let roomPlan = strategy.plan(home.room);
         Memory.plans[home.room.name] = roomPlan; 
         assignWorkers(home.room, roomPlan.workers);
-        spawnCreeps(home, roomPlan.spawns);
+        if (!Memory.goals.colonise) spawnCreeps(home, roomPlan.spawns);
     }
 
     performRoles();

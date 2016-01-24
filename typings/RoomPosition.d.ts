@@ -11,4 +11,9 @@ interface RoomPosition
      * Find an object with the shortest path from the given position. Uses A* search algorithm and Dijkstra's algorithm.
      */
     findClosestByPath<T>(type: number, opts?: { filter: any }): T;
+    
+    /**
+     * Find an object with the shortest linear distance from the given position.
+     */
+    findClosestByRange<T>(type: number, opts?: { filter: any }): T;
 }

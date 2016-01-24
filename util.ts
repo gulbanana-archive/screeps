@@ -10,7 +10,7 @@ export function wasOriginally(roles: string[]): (c: Creep) => boolean
     {
         for (let role of roles)
         {
-            if ((c.memory.was.length && c.memory.was[0] == role) || c.memory.act == role) return true;
+            if ((c.memory.was && c.memory.was.length && c.memory.was[0] == role) || c.memory.act == role) return true;
         } 
         return false;
     }

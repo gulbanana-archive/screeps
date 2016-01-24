@@ -1,5 +1,6 @@
 interface Game
 {
+    map: GameMap;
     creeps: { [key: string]: Creep; };
     spawns: { [key: string]: Spawn; };
     

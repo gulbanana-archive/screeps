@@ -204,6 +204,10 @@ actors['upgrade'] = function(creep: Creep)
             creep.moveTo(creep.room.controller);
             break;
             
+        case ERR_INVALID_TARGET:
+            console.log('upgrade: invalid target ' + creep.room.controller)
+            break;
+            
         case OK:
             if (creep.carry.energy == 0) become(creep, 'refill');
             break;
@@ -273,10 +277,75 @@ actors['repair'] = function(creep: Creep)
 
 actors['colonist'] = function(creep: Creep)
 {
-    let target = creep.memory['colonistTarget'];
+    if (creep.carry.energy < creep.carryCapacity)
+    {
+        become(creep, 'refill');
+        return; 
+    }
+    
+    let target = creep.memory['travelTarget'];
+    if (creep.room.name != target)
+    {
+        become(creep, 'travel');
+        return;
+    }
+
+    if (creep.room.controller.my)
+    {
+        reset(creep, 'upgrade');
+    }
+    
+    let result = creep.claimController(creep.room.controller);
+    switch (result)
+    {
+        case ERR_NOT_IN_RANGE:
+            creep.moveTo(creep.room.controller);
+            break;
+        
+        case ERR_GCL_NOT_ENOUGH:
+            console.log('colonist: GCL insufficient for claim');
+            break;
+        
+        case OK:
+            console.log('colonist: room claimed');
+            break;
+            
+        default:
+            console.log('colonist: unexpected error ' + result);
+    }
+}
+
+actors['travel'] = function(creep: Creep)
+{
+    let target = creep.memory['travelTarget'];
     if (!target)
     {
+        console.log('travel: no target');
         return;
+    }
+    
+    if (creep.room.name != target)
+    {    
+        let exit = Game.map.findExit(creep.room.name, target);
+        switch (exit)
+        {
+            case ERR_NO_PATH:
+                console.log('travel: exit not found');
+                return;
+            
+            case ERR_INVALID_ARGS:
+                console.log('travel: premises incorrect');
+                return;
+        }
+        
+        let exitPos = creep.pos.findClosestByRange<{pos: RoomPosition}>(exit);
+        
+        creep.moveTo(exitPos);
+    }
+    else
+    {
+        unbecome(creep);
+        act(creep); // XXX
     }
 }
 

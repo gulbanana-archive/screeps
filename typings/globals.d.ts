@@ -9,6 +9,8 @@ declare const ERR_FULL: number;
 declare const ERR_NOT_IN_RANGE: number;
 declare const ERR_INVALID_ARGS: number;
 declare const ERR_RCL_NOT_ENOUGH: number;
+declare const ERR_GCL_NOT_ENOUGH: number;
+declare const ERR_NO_PATH: number;
 
 declare const RESOURCE_ENERGY: string;
 

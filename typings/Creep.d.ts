@@ -24,6 +24,11 @@ interface Creep extends Owned, Positioned
     build(target: ConstructionSite): number;
     
     /**
+     * Claim a neutral controller under your control. The target has to be at adjacent square to the creep.
+     */
+    claimController(target: Structure): number;
+    
+    /**
      * Find the optimal path to the target within the same room and move to it. A shorthand to consequent calls of pos.findPathTo() and move() methods. If the target is in another room, then the corresponding exit will be used as a target. Needs the MOVE body part.
      */
     moveTo(target: RoomPosition|{pos: RoomPosition}): number;
