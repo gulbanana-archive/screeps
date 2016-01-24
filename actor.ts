@@ -5,7 +5,7 @@ let actors: {[key: string]: (creep: Creep) => void} = {};
 //make progress on the nearest construction site
 actors['build'] = function(creep: Creep)
 {    
-    let site = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES) as ConstructionSite;
+    let site = creep.pos.findClosestByPath<ConstructionSite>(FIND_CONSTRUCTION_SITES);
     
     if (!site)
     {
@@ -55,7 +55,7 @@ actors['harvest'] = function(creep: Creep)
             
         case ERR_INVALID_TARGET:
             console.log('harvest: source invalid. discovering new source...');
-            let newSource = creep.pos.findClosestByPath(FIND_SOURCES);
+            let newSource = creep.pos.findClosestByPath<Source>(FIND_SOURCES);
             if (newSource == null)
             {
                 console.log("no path to a source, suiciding");
@@ -63,12 +63,17 @@ actors['harvest'] = function(creep: Creep)
             }
             else
             {
-                creep.memory['source'] = creep.pos.findClosestByPath(FIND_SOURCES).id;
+                creep.memory['source'] = newSource.id;
             }
             break;
             
         case ERR_BUSY:
             console.log('harvest: still being spawned');
+            break;
+        
+        case ERR_NOT_ENOUGH_RESOURCES:
+            console.log('harvest: source is empty, becoming worker');
+            reset(creep, 'upgrade');
             break;
         
         case OK:
@@ -83,8 +88,32 @@ actors['harvest'] = function(creep: Creep)
 //refill stored energy and return to some other action 
 actors['refill'] = function(creep: Creep)
 {    
-    let storage = Game.getObjectById(creep.memory['storage']) as Positioned&Energised;
+    if (!creep.memory['storage'])
+    {
+        let spawn = _.head(creep.room.find<Spawn>(FIND_MY_SPAWNS));
+
+        if (spawn) 
+        {
+            creep.memory['storage'] = spawn.id;
+        }
+        else
+        {
+            console.log('refill: no spawn found');
+        }
+    }
     
+    let storage = Game.getObjectById(creep.memory['storage']) as Positioned&Energised;
+    if (storage == null)
+    {
+        console.log('refill: no storage found, searching...');
+    }
+    
+    if (storage.energy < (creep.carryCapacity - creep.carry.energy) && creep.memory.age > 25)
+    {
+        console.log('refill: waited too long, becoming harvester');
+        reset(creep, 'harvest');
+    }
+
     let result = storage.transferEnergy(creep);
     switch (result) 
     {
@@ -97,7 +126,7 @@ actors['refill'] = function(creep: Creep)
             break;
             
         case OK:
-            if (creep.carry.energy == creep.carryCapacity) unbecome(creep);
+            // can't transition here since it's too hard to predict whether we're about to get filled up
             break;		
             
         default:
@@ -109,8 +138,8 @@ actors['refill'] = function(creep: Creep)
 // fill extensions and spawns with stored energy 
 actors['store'] = function(creep: Creep)
 {    
-    let spawns = creep.room.find(FIND_MY_SPAWNS);
-    let extensions = creep.room.find(FIND_MY_STRUCTURES, {filter: { structureType: STRUCTURE_EXTENSION }});
+    let spawns = creep.room.find<Structure&Energised>(FIND_MY_SPAWNS);
+    let extensions = creep.room.find<Structure&Energised>(FIND_MY_STRUCTURES, {filter: { structureType: STRUCTURE_EXTENSION }});
     let storage = spawns.concat(extensions).filter(s => s.energy < s.energyCapacity);
     let target = _.head(storage);
     
@@ -177,15 +206,23 @@ actors['repair'] = function(creep: Creep)
 {    
     if (!creep.memory['repairTarget'])
     {
-        let structures = creep.room.find(FIND_STRUCTURES, {filter: (s: Structure) => s.hits && s.hitsMax}) as Structure[];
+        let structures = creep.room.find<Structure>(FIND_STRUCTURES, {filter: (s: Structure) => s.hits && s.hitsMax});
         let mostDamagedStructure = _.last(_.sortBy(structures, s => s.hitsMax - s.hits));
-        if (mostDamagedStructure) creep.memory['repairTarget'] = mostDamagedStructure.id;
+        if (mostDamagedStructure) 
+        {
+            creep.memory['repairTarget'] = mostDamagedStructure.id;
+        }
+        else
+        {
+            console.log('repair: no damaged structures found');
+        }
     }
     
     let target = Game.getObjectById(creep.memory['repairTarget']) as Structure;
     if (!target)
     {
-        console.log('repair: no damaged structures found');
+        console.log('repair: no current target, searching...');
+        creep.memory['repairTarget'] = null;
         return;
     }
     
@@ -197,6 +234,7 @@ actors['repair'] = function(creep: Creep)
             break;
             
         case ERR_NOT_ENOUGH_RESOURCES:
+            creep.memory['repairTarget'] = null;
             become(creep, 'refill');
             break;
             
@@ -209,8 +247,11 @@ actors['repair'] = function(creep: Creep)
             break;
             
         case OK:
-            if (target.hits == target.hitsMax) creep.memory['repairTarget'] = null;
-            if (creep.carry.energy == 0) become(creep, 'refill');
+            if (target.hits == target.hitsMax || creep.carry.energy == 0)
+            {
+                creep.memory['repairTarget'] = null;
+                become(creep, 'refill');
+            }
             break;
             
         default:
@@ -218,7 +259,7 @@ actors['repair'] = function(creep: Creep)
     }
 };
 
-export function work(creep: Creep)
+export function act(creep: Creep)
 {
     try
     {

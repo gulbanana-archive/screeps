@@ -1,11 +1,4 @@
-import * as actor from './actor';
-
-export interface Spec
-{
-    body: string[];
-    memory: State;
-    cost: number;
-}
+import * as util from './util';
 
 let segmentCosts: {[key: string]: number} = {};
 segmentCosts[MOVE] = 50;
@@ -16,26 +9,44 @@ segmentCosts[RANGED_ATTACK] = 150;
 segmentCosts[HEAL] = 250;
 segmentCosts[TOUGH] = 10;
 
-function getCost(body: string[]): number
+class CSpec implements Spec
 {
-    let cost = 0;
-    for (let segment of body)
+    body: string[];
+    memory: State;
+    cost: number;
+    
+    constructor(b: string[], m: State)
     {
-        cost += segmentCosts[segment];
+        this.body = b;
+        this.memory = m;
+        this.cost = 0;
+        for (let segment of this.body)
+        {
+            this.cost += segmentCosts[segment];
+        }
     }
-    return cost;
+
+    toString()
+    {
+        return this.memory.act + '@' + this.cost;
+    }
 }
 
-function countCreeps(role: string): number
-{
-    let i = 0;
-    for (let name in Game.creeps)
+class CPlan implements Plan
+{    
+    spawns: Spec[];
+    workers: string[]
+    
+    constructor(spawns: Spec[], workers: string[])
     {
-        let creep = Game.creeps[name];
-        if ((creep.memory.was.length && creep.memory.was[0] == role) || creep.memory.act == role) i++;
+        this.spawns = spawns;
+        this.workers = workers;
     }
     
-    return i;
+    toString()
+    {
+        return "{\n\tspawns: " + this.spawns + "\n\tworkers: " + this.workers + "\n}"; 
+    }
 }
 
 function iterateCreeps(): Creep[]
@@ -51,84 +62,71 @@ function iterateCreeps(): Creep[]
 
 function harvester(source: Source) : Spec
 {    
-    let capacity = calculateAvailableEnergy(source.room);
+    let capacity = util.calculateAvailableEnergy(source.room);
+    
     let body = capacity >= 500 ? [MOVE, MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY] :
                capacity >= 350 ? [MOVE, MOVE, MOVE, WORK, CARRY, CARRY] :
                                  [MOVE, MOVE, WORK, CARRY];
+                                 
     let memory: State = {age: 0, act: 'harvest', was: [], source: source.id};
-    return { body, memory, cost: getCost(body) };
+    
+    return new CSpec(body, memory);
 }
 
 function worker(storage: Positioned&Energised&Identified) : Spec
 {    
-    let capacity = calculateAvailableEnergy(storage.room);
+    let capacity = util.calculateAvailableEnergy(storage.room);
     
     let body = capacity >= 500 ? [MOVE, MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY] :
                capacity >= 400 ? [MOVE, MOVE, MOVE, WORK, WORK, CARRY] :
                                  [MOVE, MOVE, WORK, CARRY];
+                                 
     let memory = {age: 0, act: 'refill', was: ['upgrade'], storage: storage.id};
-    return { body, memory, cost: getCost(body) };
+    
+    return new CSpec(body, memory);
 }
 
-function originally(roles: string[]): (c: Creep) => boolean
-{
-    return function(c: Creep)
-    {
-        for (let role of roles)
-        {
-            if ((c.memory.was.length && c.memory.was[0] == role) || c.memory.act == role) return true;
-        } 
-        return false;
-    }
-}
-
-function planWorkers(room: Room, creeps: Creep[])
+function planWorkers(room: Room): string[]
 {   
-    let waitingForRefills = _.filter(creeps, c => c.memory.act == 'refill' && c.memory.age > 25);
+    let result: string[] = [];
     
-    if (waitingForRefills.length)
+    let creeps = room.find<Creep>(FIND_MY_CREEPS);
+    let workers = _.size(_.filter(creeps, util.wasOriginally(['upgrade', 'build', 'repair'])));
+    
+    if (workers > 0)
     {
-        console.log("refill: waited for too long, converting to harvester");
-        actor.become(waitingForRefills[0], 'harvest');
+        result.push('upgrade');
     }
     
-    let workers = _.filter(creeps, originally(['upgrade', 'build', 'repair']));
-    
-    // keep at least one upgrader
-    if (workers.length)
+    if (workers > 1)
     {
-        actor.reset(workers.shift(), 'upgrade');
+        result.push('repair');
     }
     
-    // ..and at least one repairman
-    if (workers.length)
+    let constructionSites = room.find<ConstructionSite>(FIND_CONSTRUCTION_SITES);
+    for (let i = 2; i < workers; i++)
     {
-        actor.reset(workers.shift(), 'repair');
+        if (constructionSites.length)
+        {
+            result.push('build');
+        }
+        else
+        {
+            result.push('upgrade');
+        }
     }
     
-    // the rest are either builders or upgraders
-    let constructionSites = room.find(FIND_CONSTRUCTION_SITES);
-    if (constructionSites.length)
-    {
-        _.forEach(workers, worker => actor.reset(worker, 'build'));
-    }
-    else
-    {
-        _.forEach(workers, worker => actor.reset(worker, 'upgrade'));
-    }
+    return result;
 }
 
-export function plan(home: Spawn): Spec[]
+function planSpawns(room: Room): Spec[]
 {
-    let creeps = iterateCreeps();
-    
-    planWorkers(home.room, creeps);
-    
-    let sources = home.room.find(FIND_SOURCES) as Source[]; 
     let spawns: Spec[] = [];
     
-    let harvesters = _.filter(creeps, originally(['harvest'])).length;
-    let workers = _.filter(creeps, originally(['upgrade', 'build', 'repair'])).length;
+    let creeps = room.find<Creep>(FIND_MY_CREEPS);
+    let sources = room.find<Source>(FIND_SOURCES); 
+    let harvesters = _.filter(creeps, util.wasOriginally(['harvest'])).length;
+    let workers = _.filter(creeps, util.wasOriginally(['upgrade', 'build', 'repair'])).length;
         
     let needHarvesters = sources.length * 3;
         
@@ -140,24 +138,24 @@ export function plan(home: Spawn): Spec[]
     
     while (workers * 2 < harvesters)
     {
-        spawns.push(worker(home));
+        spawns.push(worker(room.find<Spawn>(FIND_MY_SPAWNS)[0]));
         workers++;
     }
     
-    while (spawns.length < home.room.find(FIND_MY_SPAWNS).length)
+    while (spawns.length < room.find(FIND_MY_SPAWNS).length)
     {
         spawns.push(harvester(sources[0]));
     }
-
-    let knownCreeps = _.map(creeps, c => c.memory.act);
-    let plannedSpawns = _.map(spawns, s => (s.memory.was.length ? s.memory.was[0] : s.memory.act) + '@' + s.cost);
-    Memory.plan = {creeps: knownCreeps, spawns: plannedSpawns};
-
+    
     return spawns;
 }
 
-export function calculateAvailableEnergy(room: Room): number
+export function plan(room: Room): Plan
 {
-    let extensions = room.find(FIND_MY_STRUCTURES, {filter: { structureType: STRUCTURE_EXTENSION }}) as Energised[];
-    return 300 + extensions.length * 50;
+    let workers = planWorkers(room);
+    let spawns = planSpawns(room);
+    
+    let plan = new CPlan(spawns, workers);
+    Memory.plan = plan;
+    return plan;
 }

@@ -1,4 +1,4 @@
-// not part of the real model- a construct imposed for the benefit of actors
+// creep memory
 interface State
 {
     age: number;

@@ -9,10 +9,10 @@ interface Room
     memory: any;
     mode: string;
     name: string;
-    storage: Structure;
+    storage: Structure & Energised;
     
     /**
      * Find all objects of the specified type in the room.
      */
-    find(type: number, opts?: { filter: any }): any[];    
+    find<T>(type: number, opts?: { filter: any }): T[];    
 }
