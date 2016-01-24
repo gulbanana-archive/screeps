@@ -67,7 +67,7 @@ function spawnCreeps(room: Room, specs: Spec[])
     {
         if (_.size(specs) > 0 && !s.spawning && s.canCreateCreep(specs[0].body) == OK)
         { 
-            spawnCreep(s, specs.pop());
+            spawnCreep(s, specs.shift());
         }
     }
 }
