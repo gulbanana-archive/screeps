@@ -28,7 +28,7 @@ class CSpec implements Spec
 
     toString()
     {
-        return this.memory.act + '@' + this.cost;
+        return util.originalRole(this) + '@' + this.cost;
     }
 }
 

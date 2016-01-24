@@ -27,7 +27,7 @@ function spawnCreep(spawner: Spawn, spec: Spec)
             
     if (_.isString(result))
     {
-        console.log("spawn: creating " + spec.memory.act + ' "' + result + '"');
+        console.log("spawn: creating " + util.originalRole(spec) + ' "' + result + '"');
     }
     else
     {

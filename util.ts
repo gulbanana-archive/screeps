@@ -16,7 +16,7 @@ export function wasOriginally(roles: string[]): (c: Creep) => boolean
     }
 }
 
-export function originalRole(c: Creep): string
+export function originalRole(c: {memory: State}): string
 {
     return c.memory.was.length ? c.memory.was[0] : c.memory.act
 }
