@@ -130,6 +130,10 @@ actors['store'] = function(creep: Creep)
             console.log('store: all targets full');
             break;
             
+        case ERR_INVALID_TARGET:
+            console.log('store: invalid target ' + target);
+            break;
+            
         case OK:
             if (target.energyCapacity - target.energy >= creep.carry.energy) unbecome(creep);
             break;
