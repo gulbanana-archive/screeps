@@ -20,3 +20,11 @@ export function originalRole(c: {memory: State}): string
 {
     return c.memory.was.length ? c.memory.was[0] : c.memory.act
 }
+
+export function realMax(s: Structure)
+{
+    if (s.structureType == STRUCTURE_WALL)
+        return Math.min(s.hitsMax, Memory.goals.wallCap);
+    else
+        return s.hitsMax; 
+}

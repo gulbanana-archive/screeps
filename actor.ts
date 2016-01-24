@@ -1,3 +1,4 @@
+import * as util from './util';
 import _ = require('lodash');
 
 let actors: {[key: string]: (creep: Creep) => void} = {};
@@ -229,8 +230,8 @@ actors['repair'] = function(creep: Creep)
 {    
     if (!creep.memory['repairTarget'])
     {
-        let structures = creep.room.find<Structure>(FIND_STRUCTURES, {filter: (s: Structure) => s.hits && s.hitsMax && !(s.structureType == STRUCTURE_WALL && s.hits >= Memory.goals.wallCap)});
-        let mostDamagedStructure = _.last(_.sortBy(structures, s => s.hitsMax - s.hits));
+        let structures = creep.room.find<Structure>(FIND_STRUCTURES, {filter: (s: Structure) => s.hits && s.hitsMax});
+        let mostDamagedStructure = _.last(_.sortBy(structures, s => util.realMax(s) - s.hits));
         if (mostDamagedStructure) 
         {
             creep.memory['repairTarget'] = mostDamagedStructure.id;
@@ -270,7 +271,7 @@ actors['repair'] = function(creep: Creep)
             break;
             
         case OK:
-            if (target.hits == target.hitsMax || creep.carry.energy == 0)
+            if (target.hits == util.realMax(target) || creep.carry.energy == 0)
             {
                 creep.memory['repairTarget'] = null;
                 become(creep, 'refill');
