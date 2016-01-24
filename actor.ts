@@ -117,8 +117,15 @@ actors['refill'] = function(creep: Creep)
     let storage = Game.getObjectById(creep.memory['storage']) as Positioned&Energised;
     if (storage && storage.energy < (creep.carryCapacity - creep.carry.energy) && creep.memory.age > 25)
     {
-        console.log('refill: waited too long, becoming harvester');
-        reset(creep, 'harvest');
+        if (_.sum(_.map(creep.room.find<Source>(FIND_SOURCES), s => s.energy)) == 0)
+        {
+            creep.memory.age--;
+        }
+        else
+        {
+            console.log('refill: waited too long, becoming harvester');
+            reset(creep, 'harvest');
+        }
     }
 
     let result = storage.transferEnergy(creep);
