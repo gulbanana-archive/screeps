@@ -78,6 +78,19 @@ function worker(storage: Positioned&Energised&Identified) : Spec
     return new CSpec(body, memory);
 }
 
+function remote(origin: Room, destinationName: string): Spec
+{
+    let capacity = util.calculateAvailableEnergy(origin);
+    
+    let body = capacity >= 500 ? [MOVE, MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY] :
+               capacity >= 400 ? [MOVE, MOVE, MOVE, WORK, WORK, CARRY] :
+                                 [MOVE, MOVE, WORK, CARRY];
+                                 
+    let memory: State = {age: 0, act: 'remoteBuild', was: [], remoteOrigin: origin.name, remoteDestination: destinationName};
+    
+    return new CSpec(body, memory);
+}
+
 function planWorkers(room: Room): string[]
 {   
     let result: string[] = [];
@@ -137,8 +150,20 @@ function planSpawns(room: Room): Spec[]
     let harvesters = _.filter(creeps, actor.wasOriginally(['harvest'])).length;
     let workers = _.filter(creeps, actor.wasOriginally(['upgrade', 'build', 'repair'])).length;
         
-    let needHarvesters = sources.length * 3;
+    if (Memory.goals.colonise)
+    {
+        let colonists =  _.filter(creeps, actor.wasOriginally(['remoteBuild']));
+        if (colonists.length)
+        {
+            Memory.goals.colonise = null;
+        }
+        else
+        {
+            spawns.push(remote(room, Memory.goals.colonise));
+        }
+    }
         
+    let needHarvesters = sources.length * 3;
     while (harvesters < needHarvesters)
     {
         spawns.push(harvester(sources[0]));
