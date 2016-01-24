@@ -32,7 +32,7 @@ actors['build'] = function(creep: Creep)
             break;
             
         case ERR_INVALID_TARGET:
-            console.log('build: invalid target ' + site);
+            if (site != null) console.log('build: invalid target ' + site);
             creep.memory['buildSite'] = null;
             break;
             
