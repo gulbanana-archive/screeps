@@ -61,7 +61,16 @@ actors['harvest'] = function(creep: Creep)
             
         case ERR_INVALID_TARGET:
             console.log('harvest: source invalid. discovering new source...');
-            creep.memory['source'] = creep.pos.findClosestByPath(FIND_SOURCES).id;
+            let newSource = creep.pos.findClosestByPath(FIND_SOURCES);
+            if (newSource == null)
+            {
+                console.log("no path to a source, suiciding");
+                creep.suicide();
+            }
+            else
+            {
+                creep.memory['source'] = creep.pos.findClosestByPath(FIND_SOURCES).id;
+            }
             break;
             
         case ERR_BUSY:
@@ -100,15 +109,18 @@ actors['refill'] = function(creep: Creep)
     }
 }
 
-//transfer stored energy return to some other action 
+// fill extensions and spawns with stored energy 
 actors['store'] = function(creep: Creep)
 {    
-    let storage = Game.getObjectById(creep.memory['storage']) as Creep | Spawn | Structure;
+    let spawns = creep.room.find(FIND_MY_SPAWNS);
+    let extensions = creep.room.find(FIND_MY_STRUCTURES, {filter: { structureType: STRUCTURE_EXTENSION }});
+    let storage = spawns.concat(extensions).filter(s => s.energy < s.energyCapacity);
+    let target = _.head(storage);
     
-    switch (creep.transfer(storage, RESOURCE_ENERGY))
+    switch (creep.transfer(target, RESOURCE_ENERGY))
     {
         case ERR_NOT_IN_RANGE:
-            creep.moveTo(storage);
+            creep.moveTo(target);
             break;
             
         case OK:
@@ -135,6 +147,7 @@ actors['upgrade'] = function(creep: Creep)
 export function work(creep: Creep)
 {
     actors[creep.memory.act](creep);
+    creep.memory.age++;
 }
 
 export function become(creep: Creep, role: string)

@@ -8,6 +8,11 @@ interface Spawn extends Structure, Energised
     spawning: { name: string; needTime: number; remainingTime: number; };
     
     /**
+     * Check if a creep can be created.
+     */
+    canCreateCreep(body: string[], name?: string): number;
+    
+    /**
      * Start the creep spawning process.
      */
     createCreep(body: string[], name?: string, memory?: any): number | string;

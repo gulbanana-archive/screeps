@@ -14,5 +14,5 @@ interface Room
     /**
      * Find all objects of the specified type in the room.
      */
-    find(type: number, opts?: { filter: any }): (Creep | ConstructionSite | Source)[];    
+    find(type: number, opts?: { filter: any }): any[];    
 }

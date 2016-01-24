@@ -12,9 +12,13 @@ declare const ERR_RCL_NOT_ENOUGH: number;
 
 declare const RESOURCE_ENERGY: string;
 
-declare const FIND_SOURCES: number;
+declare const STRUCTURE_EXTENSION: string;
+
 declare const FIND_CONSTRUCTION_SITES: number;
 declare const FIND_HOSTILE_CREEPS: number;
+declare const FIND_MY_SPAWNS: number;
+declare const FIND_MY_STRUCTURES: number;
+declare const FIND_SOURCES: number;
 declare const FIND_STRUCTURES: number;
 
 declare const WORK: string;

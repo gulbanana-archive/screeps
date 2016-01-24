@@ -49,34 +49,38 @@ function iterateCreeps(): Creep[]
     return creeps;
 }
 
-function harvester(source: Source, storage: Creep | Spawn | Structure) : Spec
+function harvester(source: Source) : Spec
 {    
-    let body = [MOVE, WORK, CARRY];
-    let memory = {age: 0, act: 'harvest', source: source.id, storage: storage.id};
+    let capacity = calculateAvailableEnergy(source.room);
+    let body = capacity >= 450 ? [MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY] :
+               capacity >= 350 ? [MOVE, MOVE, MOVE, WORK, CARRY, CARRY] :
+                                 [MOVE, MOVE, WORK, CARRY];
+    let memory = {age: 0, act: 'harvest', source: source.id};
     return { body, memory, cost: getCost(body) };
 }
 
 function worker(storage: Positioned&Energised&Identified) : Spec
 {    
-    let body = [MOVE, WORK, CARRY];
+    let capacity = calculateAvailableEnergy(storage.room);
+    
+    let body = capacity >= 400 ? [MOVE, MOVE, MOVE, WORK, WORK, CARRY] :
+                                 [MOVE, MOVE, WORK, CARRY];
     let memory = {age: 0, act: 'refill', was: 'upgrade', storage: storage.id};
     return { body, memory, cost: getCost(body) };
 }
 
-let home = Game.spawns['Spawn1'];
-
-export function modifyRoles(creeps: Creep[])
+function modifyRoles(room: Room, creeps: Creep[])
 {   
-    let workersWaitingForRefills = _.filter(creeps, c => c.memory.act == 'refill' && c.memory.age > 20);
+    let workersWaitingForRefills = _.filter(creeps, c => c.memory.act == 'refill' && c.memory.age > 25);
     
-    if (workersWaitingForRefills.length > 2)
+    if (workersWaitingForRefills.length)
     {
-        console.log("too many workers waiting, converting one to harvester");
+        console.log("refill: waited for too long, converting to harvester");
         actor.become(workersWaitingForRefills[0], 'harvest');
     }
     
     // convert most upgraders to builders
-    let constructionSites = home.room.find(FIND_CONSTRUCTION_SITES);
+    let constructionSites = room.find(FIND_CONSTRUCTION_SITES);
     if (constructionSites.length)
     {
         for (let worker of _.drop(_.filter(creeps, c => c.memory.act == 'upgrade'), 1))
@@ -95,11 +99,11 @@ export function modifyRoles(creeps: Creep[])
     }
 }
 
-export function plan(): Spec[]
+export function plan(home: Spawn): Spec[]
 {
     let creeps = iterateCreeps();
     
-    modifyRoles(creeps);
+    modifyRoles(home.room, creeps);
     
     let sources = home.room.find(FIND_SOURCES) as Source[]; 
     let spawns: Spec[] = [];
@@ -128,4 +132,10 @@ export function plan(): Spec[]
     Memory.plan = {creeps: knownCreeps, spawns: plannedSpawns};
 
     return spawns;
+}
+
+export function calculateAvailableEnergy(room: Room): number
+{
+    let extensions = room.find(FIND_MY_STRUCTURES, {filter: { structureType: STRUCTURE_EXTENSION }}) as Energised[];
+    return 300 + extensions.length * 50;
 }

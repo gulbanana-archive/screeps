@@ -41,7 +41,7 @@ interface Creep extends Owned, Positioned
     /**
      * Transfer resource from the creep to another object. The target has to be at adjacent square to the creep.
      */
-    transfer(target: Creep | Spawn | Structure, resourceType: string, amount?: number): number;
+    transfer(target: Creep | Structure, resourceType: string, amount?: number): number;
     
     /**
      * Upgrade your controller to the next level using carried energy. Upgrading controllers raises your Global Control Level in parallel. Needs WORK and CARRY body parts. The target has to be at adjacent square to the creep. A fully upgraded level 8 controller can't be upgraded with the power over 15 energy units per tick regardless of creeps power. The cumulative effect of all the creeps performing upgradeController in the current tick is taken into account.
