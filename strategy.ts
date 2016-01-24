@@ -52,8 +52,7 @@ function iterateCreeps(): Creep[]
 function harvester(source: Source) : Spec
 {    
     let capacity = calculateAvailableEnergy(source.room);
-    let body = capacity >= 450 ? [MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY] :
-               capacity >= 350 ? [MOVE, MOVE, MOVE, WORK, CARRY, CARRY] :
+    let body = capacity >= 350 ? [MOVE, MOVE, MOVE, WORK, CARRY, CARRY] :
                                  [MOVE, MOVE, WORK, CARRY];
     let memory = {age: 0, act: 'harvest', source: source.id};
     return { body, memory, cost: getCost(body) };
@@ -79,11 +78,22 @@ function modifyRoles(room: Room, creeps: Creep[])
         actor.become(workersWaitingForRefills[0], 'harvest');
     }
     
+    let builders = _.filter(creeps, c => c.memory.act == 'build');
+    let upgraders = _.filter(creeps, c => c.memory.act == 'upgrade');
+    
+    // keep at least one upgrader
+    if (builders.length && !upgraders.length)
+    {
+        let worker = builders.pop();
+        actor.become(worker, 'upgrade');
+        upgraders.push(worker);
+    }
+    
     // convert most upgraders to builders
     let constructionSites = room.find(FIND_CONSTRUCTION_SITES);
     if (constructionSites.length)
     {
-        for (let worker of _.drop(_.filter(creeps, c => c.memory.act == 'upgrade'), 1))
+        for (let worker of _.drop(upgraders, 1))
         {
             actor.become(worker, 'build');
         }
@@ -92,7 +102,7 @@ function modifyRoles(room: Room, creeps: Creep[])
     //nothing to build? back to upgrading
     else
     {
-        for (let worker of _.filter(creeps, c => c.memory.act == 'build'))
+        for (let worker of builders)
         {
             actor.become(worker, 'upgrade');
         }
