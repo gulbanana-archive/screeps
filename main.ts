@@ -47,22 +47,23 @@ function spawnCreep(spawner: Spawn, spec: Spec)
     }
 }
 
-function spawnCreeps(home: Spawn, specs: Spec[])
+function spawnCreeps(room: Room, specs: Spec[])
 {
-    let spawners = [home];
-    let usedSpawners: Spawn[] = [];
+    let spawners = room.find<Spawn>(FIND_MY_SPAWNS);
+    let availableEnergy = util.calculateAvailableEnergy(room);
     
-    _.forEach(specs, spec =>
+    while (specs[0].cost > availableEnergy)
     {
-        let availableEnergy = util.calculateAvailableEnergy(home.room);
-        if (spec.cost > availableEnergy) 
-        {
-            console.log('spawn goal cost too high');
+        console.log('spawn cost too high: ' + specs.pop());
+    }
+    
+    for (let s of spawners)
+    {
+        if (_.size(specs) > 0 && !s.spawning && s.canCreateCreep(specs[0].body) == OK)
+        { 
+            spawnCreep(s, specs.pop());
         }
-        
-        let spawner = _.head(_.filter(spawners, s => _.indexOf(usedSpawners, s)==-1 && s.canCreateCreep(spec.body) == OK));
-        if (spawner) spawnCreep(spawner, spec);
-    });
+    }
 }
 
 function performRoles()
@@ -94,7 +95,7 @@ export function loop()
         let roomPlan = strategy.plan(home.room);
         Memory.plans[home.room.name] = roomPlan; 
         assignWorkers(home.room, roomPlan.workers);
-        if (!Memory.goals.colonise) spawnCreeps(home, roomPlan.spawns);
+        if (!Memory.goals.colonise) spawnCreeps(home.room, roomPlan.spawns);
     }
 
     performRoles();
