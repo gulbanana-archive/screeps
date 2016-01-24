@@ -57,7 +57,7 @@ actors['harvest'] = function(creep: Creep)
         let newSource = creep.pos.findClosestByPath<Source>(FIND_SOURCES);
         if (!newSource)
         {
-            console.log("no path to a source, becoming worker");
+            console.log("harvest: no path to a source");
             reset(creep, 'upgrade');
         }
         else
@@ -307,7 +307,11 @@ export function reset(creep: Creep, role: string)
 {
     if (creep.memory.act == role || (creep.memory.was.length && creep.memory.was[0] == role)) return;
     
+    console.log(creep.memory.act + ' "' + creep.name + '" became ' + role);
+    
     creep.memory.age = 0;
     creep.memory.was = [];
     creep.memory.act = role;
+    
+    
 }
