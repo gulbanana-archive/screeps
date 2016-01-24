@@ -35,17 +35,19 @@ class CSpec implements Spec
 class CPlan implements Plan
 {    
     spawns: Spec[];
-    workers: string[]
+    workers: string[];
+    priorityRepairs: string[];
     
-    constructor(spawns: Spec[], workers: string[])
+    constructor(spawns: Spec[], workers: string[], priorityRepairs: string[])
     {
         this.spawns = spawns;
         this.workers = workers;
+        this.priorityRepairs = priorityRepairs;
     }
     
     toString()
     {
-        return "{\n\tspawns: " + this.spawns + "\n\tworkers: " + this.workers + "\n}"; 
+        return "{\n\tspawns: " + this.spawns + "\n\tworkers: " + this.workers +  "\n\tpriorityRepairs: " + this.priorityRepairs + "\n}"; 
     }
 }
 
@@ -160,6 +162,7 @@ export function plan(room: Room): Plan
 {
     let workers = planWorkers(room);
     let spawns = planSpawns(room);
+    let priorityRepairs = room.find<Structure>(FIND_STRUCTURES, {filter: (s: Structure) => s.hits == 1}).map(s => s.id);
     
-    return new CPlan(spawns, workers);
+    return new CPlan(spawns, workers, priorityRepairs);
 }

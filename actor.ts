@@ -228,6 +228,12 @@ actors['upgrade'] = function(creep: Creep)
 // find and fix broken structures
 actors['repair'] = function(creep: Creep)
 {    
+    let retarget = Memory.plans[creep.room.name].priorityRepairs.pop();
+    if (retarget)
+    {
+        creep.memory['repairTarget'] = retarget;
+    }
+    
     if (!creep.memory['repairTarget'])
     {
         let structures = creep.room.find<Structure>(FIND_STRUCTURES, {filter: (s: Structure) => s.hits && s.hitsMax});

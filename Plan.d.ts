@@ -3,4 +3,5 @@ interface Plan
 {
     spawns: Spec[];
     workers: string[];
+    priorityRepairs: string[];
 }
