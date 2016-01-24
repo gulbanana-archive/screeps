@@ -89,7 +89,7 @@ function modifyRoles(room: Room, creeps: Creep[])
     }
     
     let builders = _.filter(creeps, originally('build'));
-    let upgraders = _.filter(creeps, originally('build'));
+    let upgraders = _.filter(creeps, originally('upgrade'));
     
     // keep at least one upgrader
     if (builders.length && !upgraders.length)
