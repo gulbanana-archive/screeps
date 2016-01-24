@@ -271,6 +271,15 @@ actors['repair'] = function(creep: Creep)
     }
 };
 
+actors['colonist'] = function(creep: Creep)
+{
+    let target = creep.memory['colonistTarget'];
+    if (!target)
+    {
+        return;
+    }
+}
+
 export function act(creep: Creep)
 {
     try

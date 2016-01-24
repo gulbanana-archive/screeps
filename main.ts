@@ -76,7 +76,17 @@ function performRoles()
 
 export function loop() 
 {
-    Memory.plans = {};
+    if (!Memory.goals) Memory.goals = { colony: false };
+    
+    if (!Memory.plans) Memory.plans = {};
+    
+    if (Memory.goals.colony)
+    {
+        if (Game.spawns['Spawn1'].createCreep([MOVE, MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY], 'Dora', {act: 'colonist'}) == OK)
+        {
+            Memory.goals.colony = false;
+        }
+    }
     
     for (let home of [Game.spawns['Spawn1']])
     {
