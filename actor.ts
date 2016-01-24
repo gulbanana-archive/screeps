@@ -10,35 +10,34 @@ actors['build'] = function(creep: Creep)
     if (!site)
     {
         console.log('build: no construction site found');
+        return;
     }
-    else
-    {
-        var result = creep.build(site); 
-        switch (result)
-        {                
-            case ERR_NOT_IN_RANGE:
-                creep.moveTo(site);
-                break;
-                
-            case ERR_NOT_ENOUGH_RESOURCES:
-                become(creep, 'refill');
-                break;
-                
-            case ERR_INVALID_TARGET:
-                console.log('build: invalid target ' + site);
-                break;
-                
-            case ERR_BUSY:
-                console.log('build: still being spawned');
-                break;
-                
-            case OK:
-                if (creep.carry.energy == 0) become(creep, 'refill');
-                break;
-                
-            default:
-                console.log('build: unexpected error ' + result);
-        }
+    
+    let result = creep.build(site); 
+    switch (result)
+    {                
+        case ERR_NOT_IN_RANGE:
+            creep.moveTo(site);
+            break;
+            
+        case ERR_NOT_ENOUGH_RESOURCES:
+            become(creep, 'refill');
+            break;
+            
+        case ERR_INVALID_TARGET:
+            console.log('build: invalid target ' + site);
+            break;
+            
+        case ERR_BUSY:
+            console.log('build: still being spawned');
+            break;
+            
+        case OK:
+            if (creep.carry.energy == 0) become(creep, 'refill');
+            break;
+            
+        default:
+            console.log('build: unexpected error ' + result);
     }
 };
 
@@ -173,6 +172,52 @@ actors['upgrade'] = function(creep: Creep)
     }
 }
 
+// find and fix broken structures
+actors['repair'] = function(creep: Creep)
+{    
+    if (!creep.memory['repairTarget'])
+    {
+        let structures = creep.room.find(FIND_STRUCTURES, {filter: (s: Structure) => s.hits && s.hitsMax}) as Structure[];
+        let mostDamagedStructure = _.last(_.sortBy(structures, s => s.hitsMax - s.hits));
+        if (mostDamagedStructure) creep.memory['repairTarget'] = mostDamagedStructure.id;
+    }
+    
+    let target = Game.getObjectById(creep.memory['repairTarget']) as Structure;
+    if (!target)
+    {
+        console.log('repair: no damaged structures found');
+        return;
+    }
+    
+    let result = creep.repair(target); 
+    switch (result)
+    {                
+        case ERR_NOT_IN_RANGE:
+            creep.moveTo(target);
+            break;
+            
+        case ERR_NOT_ENOUGH_RESOURCES:
+            become(creep, 'refill');
+            break;
+            
+        case ERR_INVALID_TARGET:
+            console.log('repair: invalid target ' + target);
+            break;
+            
+        case ERR_BUSY:
+            console.log('repair: still being spawned');
+            break;
+            
+        case OK:
+            if (target.hits == target.hitsMax) creep.memory['repairTarget'] = null;
+            if (creep.carry.energy == 0) become(creep, 'refill');
+            break;
+            
+        default:
+            console.log('repair: unexpected error ' + result);
+    }
+};
+
 export function work(creep: Creep)
 {
     try
@@ -207,6 +252,8 @@ export function unbecome(creep: Creep)
 
 export function reset(creep: Creep, role: string)
 {
+    if (creep.memory.act == role || (creep.memory.was.length && creep.memory.was[0] == role)) return;
+    
     creep.memory.age = 0;
     creep.memory.was = [];
     creep.memory.act = role;

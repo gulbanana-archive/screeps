@@ -10,5 +10,5 @@ interface RoomPosition
     /**
      * Find an object with the shortest path from the given position. Uses A* search algorithm and Dijkstra's algorithm.
      */
-    findClosestByPath(type: number): (Creep | ConstructionSite | Source);
+    findClosestByPath(type: number, opts?: { filter: any }): any;
 }

@@ -70,53 +70,51 @@ function worker(storage: Positioned&Energised&Identified) : Spec
     return { body, memory, cost: getCost(body) };
 }
 
-function originally(role: string): (c: Creep) => boolean
+function originally(roles: string[]): (c: Creep) => boolean
 {
     return function(c: Creep)
     {
-        return ((c.memory.was.length && c.memory.was[0] == role) || c.memory.act == role); 
+        for (let role of roles)
+        {
+            if ((c.memory.was.length && c.memory.was[0] == role) || c.memory.act == role) return true;
+        } 
+        return false;
     }
 }
 
-function modifyRoles(room: Room, creeps: Creep[])
+function planWorkers(room: Room, creeps: Creep[])
 {   
-    let workersWaitingForRefills = _.filter(creeps, c => c.memory.act == 'refill' && c.memory.age > 25);
+    let waitingForRefills = _.filter(creeps, c => c.memory.act == 'refill' && c.memory.age > 25);
     
-    if (workersWaitingForRefills.length)
+    if (waitingForRefills.length)
     {
         console.log("refill: waited for too long, converting to harvester");
-        actor.become(workersWaitingForRefills[0], 'harvest');
+        actor.become(waitingForRefills[0], 'harvest');
     }
     
-    let builders = _.filter(creeps, originally('build'));
-    let upgraders = _.filter(creeps, originally('upgrade'));
+    let workers = _.filter(creeps, originally(['upgrade', 'build', 'repair']));
     
     // keep at least one upgrader
-    if (builders.length && !upgraders.length)
+    if (workers.length)
     {
-        let worker = builders.pop();
-        actor.reset(worker, 'upgrade');
-        upgraders.push(worker);
+        actor.reset(workers.shift(), 'upgrade');
     }
     
-    // nothing to build? back to upgrading
+    // ..and at least one repairman
+    if (workers.length)
+    {
+        actor.reset(workers.shift(), 'repair');
+    }
+    
+    // the rest are either builders or upgraders
     let constructionSites = room.find(FIND_CONSTRUCTION_SITES);
-    if (!constructionSites.length)
+    if (constructionSites.length)
     {
-        for (let worker of builders)
-        {
-            actor.reset(worker, 'upgrade');
-        }
+        _.forEach(workers, worker => actor.reset(worker, 'build'));
     }
-    
-    // use most workers as builders
     else
     {
-        for (let worker of _.drop(upgraders, 1))
-        {
-            while (worker.memory.was.length) actor.unbecome(worker);
-            actor.reset(worker, 'build');
-        }
+        _.forEach(workers, worker => actor.reset(worker, 'upgrade'));
     }
 }
 
@@ -124,13 +122,13 @@ export function plan(home: Spawn): Spec[]
 {
     let creeps = iterateCreeps();
     
-    modifyRoles(home.room, creeps);
+    planWorkers(home.room, creeps);
     
     let sources = home.room.find(FIND_SOURCES) as Source[]; 
     let spawns: Spec[] = [];
     
-    let harvesters = _.filter(creeps, originally('harvest')).length;
-    let workers = _.filter(creeps, c => c.memory.act == 'build' || c.memory.act == 'upgrade' || c.memory.act == 'refill').length;
+    let harvesters = _.filter(creeps, originally(['harvest'])).length;
+    let workers = _.filter(creeps, originally(['upgrade', 'build', 'repair'])).length;
         
     let needHarvesters = sources.length * 3;
         

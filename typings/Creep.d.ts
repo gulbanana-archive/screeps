@@ -34,6 +34,11 @@ interface Creep extends Owned, Positioned
     harvest(target: Source): number;
     
     /**
+     * Repair a damaged structure using carried energy. Needs the WORK and CARRY body parts. The target has to be within 3 squares range of the creep.
+     */
+    repair(target: Structure): number;
+    
+    /**
      * Kill the creep immediately.
      */
     suicide(): number;
