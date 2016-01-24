@@ -357,7 +357,6 @@ actors['travel'] = function(creep: Creep)
     else
     {
         unbecome(creep);
-        act(creep); // XXX
     }
 }
 
@@ -385,12 +384,16 @@ export function become(creep: Creep, role: string)
     creep.memory.age = 0;
     creep.memory.was.push(creep.memory.act);
     creep.memory.act = role;
+    
+    actors[creep.memory.act](creep);
 }
 
 export function unbecome(creep: Creep)
 {
     creep.memory.age = 0;
     creep.memory.act = creep.memory.was.pop();
+    
+    actors[creep.memory.act](creep);
 }
 
 export function reset(creep: Creep, role: string)

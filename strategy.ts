@@ -142,7 +142,7 @@ function planSpawns(room: Room): Spec[]
         harvesters++;
     }
     
-    while (workers * 2 < harvesters)
+    while (workers * 2 <= harvesters)
     {
         spawns.push(worker(room.find<Spawn>(FIND_MY_SPAWNS)[0]));
         workers++;
