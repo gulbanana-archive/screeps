@@ -89,7 +89,7 @@ actors['refill'] = function(creep: Creep)
             break;
             
         case ERR_FULL:
-            recall(creep);
+            unbecome(creep);
             
         case OK:
             break;		
@@ -112,7 +112,7 @@ actors['store'] = function(creep: Creep)
             break;
             
         case OK:
-            recall(creep);
+            unbecome(creep);
             break;
     } 
 }
@@ -137,14 +137,20 @@ export function work(creep: Creep)
     actors[creep.memory.act](creep);
 }
 
-export function become(creep: Creep, newActor: string)
+export function become(creep: Creep, role: string)
 {
+    if (_.keys(actors).indexOf(role) == -1)
+    {
+        console.log('no such role ' + role);
+        return;
+    }
+    
     creep.memory.age = 0;
     creep.memory.was = creep.memory.act;
-    creep.memory.act = newActor;
+    creep.memory.act = role;
 }
 
-export function recall(creep: Creep)
+export function unbecome(creep: Creep)
 {
     creep.memory.age = 0;
     creep.memory.act = creep.memory.was;

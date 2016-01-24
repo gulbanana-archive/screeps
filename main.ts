@@ -35,9 +35,7 @@ function executeSpawns(specs: strategy.Spec[])
 
 export function loop() 
 {
-    var plan = strategy.planSpawns();
-    
-    executeSpawns(plan);
+    executeSpawns(strategy.plan());
     
     for (let name in Game.creeps)
     {

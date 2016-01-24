@@ -38,28 +38,17 @@ function countCreeps(role: string): number
     return i;
 }
 
-function findCreeps(role: string): Creep[]
+function iterateCreeps(): Creep[]
 {
     let creeps: Creep[] = [];
-    
     for (let name in Game.creeps)
     {
         let creep = Game.creeps[name];
-        if (creep.memory.act == role || creep.memory.was == role) creeps.push(creep);
+        creeps.push(creep);
     }
-    
     return creeps;
 }
 
-//enacts construction directives
-function builder(storage: Positioned&Energised&Identified) : Spec
-{    
-    let body = [MOVE, WORK, CARRY];
-    let memory = {age: 0, act: 'refill', was: 'build', storage: storage.id};
-    return { body, memory, cost: getCost(body) };
-}
-
-//harvests an energy source and transfers its energy to some storage 
 function harvester(source: Source, storage: Creep | Spawn | Structure) : Spec
 {    
     let body = [MOVE, WORK, CARRY];
@@ -67,81 +56,75 @@ function harvester(source: Source, storage: Creep | Spawn | Structure) : Spec
     return { body, memory, cost: getCost(body) };
 }
 
-//transfers energy from a source to the room controller
-function upgrader(storage: Positioned&Energised&Identified) : Spec
+function worker(storage: Positioned&Energised&Identified) : Spec
 {    
     let body = [MOVE, WORK, CARRY];
     let memory = {age: 0, act: 'refill', was: 'upgrade', storage: storage.id};
     return { body, memory, cost: getCost(body) };
 }
 
-export function modifyOrders()
-{
-    let waitingForRefills = _.filter(findCreeps('refill'), c => c.memory.age > 20);
+let home = Game.spawns['Spawn1'];
+
+export function modifyRoles(creeps: Creep[])
+{   
+    let workersWaitingForRefills = _.filter(creeps, c => c.memory.act == 'refill' && c.memory.age > 20);
     
-    if (waitingForRefills.length > 2)
+    if (workersWaitingForRefills.length > 2)
     {
-        console.log("too many refills waiting, converting one to harvester");
-        actor.become(waitingForRefills[0], 'harvest');
+        console.log("too many workers waiting, converting one to harvester");
+        actor.become(workersWaitingForRefills[0], 'harvest');
+    }
+    
+    // convert most upgraders to builders
+    let constructionSites = home.room.find(FIND_CONSTRUCTION_SITES);
+    if (constructionSites.length)
+    {
+        for (let worker of _.drop(_.filter(creeps, c => c.memory.act == 'upgrade'), 1))
+        {
+            actor.become(worker, 'build');
+        }
+    }
+    
+    //nothing to build? back to upgrading
+    else
+    {
+        for (let worker of _.filter(creeps, c => c.memory.act == 'build'))
+        {
+            actor.become(worker, 'upgrade');
+        }
     }
 }
 
-export function planSpawns(): Spec[]
+export function plan(): Spec[]
 {
-    let home = Game.spawns['Spawn1'];
-    let mine = home.room.find(FIND_SOURCES)[0] as Source;
+    let creeps = iterateCreeps();
+    
+    modifyRoles(creeps);
+    
+    let sources = home.room.find(FIND_SOURCES) as Source[]; 
     let spawns: Spec[] = [];
     
-    let harvesters = countCreeps('harvest');
-    let upgraders = countCreeps('upgrade');
-    let builders = countCreeps('build');
+    let harvesters = _.filter(creeps, c => c.memory.act == 'harvest' || c.memory.act == 'store').length;
+    let workers = _.filter(creeps, c => c.memory.act == 'build' || c.memory.act == 'upgrade' || c.memory.act == 'refill').length;
         
-    let knownCreeps = harvesters + " harvest, " + upgraders + " upgrade, " + builders + " build";
-    
-    while (harvesters < 1)
-    {
-        spawns.push(harvester(mine, home));
-        harvesters++;
-    }
+    let needHarvesters = sources.length * 3;
         
-    while (upgraders < 1)
+    while (harvesters < needHarvesters)
     {
-        spawns.push(upgrader(home));
-        upgraders++;
-    }
-    
-    while (harvesters < 3)
-    {
-        spawns.push(harvester(mine, home));
+        spawns.push(harvester(sources[0], home));
         harvesters++;
     }
     
-    while (builders < 1)
+    while (workers * 2 < harvesters)
     {
-        spawns.push(builder(home));
-        builders++;
-    }
-     
-    while (upgraders < 3)
-    {
-        spawns.push(upgrader(home));
-        upgraders++;
-    }
-        
-    while (builders < 3)
-    {
-        spawns.push(builder(home));
-        builders++;
+        spawns.push(worker(home));
+        workers++;
     }
     
-    while (harvesters < 5)
-    {
-        spawns.push(harvester(mine, home));
-        harvesters++;
-    }
+    if (!spawns.length) spawns.push(harvester(sources[0], home));
 
+    let knownCreeps = _.map(creeps, c => c.memory.act);
     let plannedSpawns = _.map(spawns, s => (s.memory.was ? s.memory.was : s.memory.act) + '@' + s.cost);
-    
     Memory.plan = {creeps: knownCreeps, spawns: plannedSpawns};
 
     return spawns;
