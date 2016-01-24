@@ -102,7 +102,7 @@ function planWorkers(room: Room): string[]
     
     let constructionSites = room.find<ConstructionSite>(FIND_CONSTRUCTION_SITES).length;
     let brokenStructures = room.find<Structure>(FIND_STRUCTURES, {filter: (s: Structure) => (s.hits < s.hitsMax) && !(s.structureType == STRUCTURE_WALL && s.hits >= Memory.goals.wallCap)}).length;
-    let extraRepair = Math.floor(brokenStructures/25);
+    let extraRepair = Math.floor(brokenStructures/50);
     while (workers > 0)
     {
         if (extraRepair > 0)
