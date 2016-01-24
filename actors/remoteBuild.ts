@@ -3,17 +3,10 @@ import * as actor from './_actor';
 // build in another room
 export default function(creep: Creep)
 {    
-    // if at home, fill up on energy
+    // if at home, leave
     let target = creep.memory['remoteDestination'];
     if (creep.room.name != target)
     {
-        if (creep.carry.energy < creep.carryCapacity)
-        {
-            actor.become(creep, 'refill');
-            return; 
-        }
-        
-        creep.memory['travelTarget'] = creep.memory['remoteDestination'];
         actor.become(creep, 'travel');
         return;
     }
@@ -41,10 +34,10 @@ export default function(creep: Creep)
             break;
             
         case ERR_NOT_ENOUGH_RESOURCES:
-            creep.memory['travelTarget'] = creep.memory['remoteOrigin'];
-            actor.become(creep, 'travel');
+            let source = creep.room.find<Source>(FIND_SOURCES)[0];
+            if (creep.harvest(source) == ERR_NOT_IN_RANGE) creep.moveTo(source);
             break;
-            
+
         case ERR_INVALID_TARGET:
             if (site != null) console.log('remoteBuild: invalid target ' + site);
             creep.memory['buildSite'] = null;
