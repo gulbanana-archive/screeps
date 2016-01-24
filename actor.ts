@@ -5,13 +5,20 @@ let actors: {[key: string]: (creep: Creep) => void} = {};
 //make progress on the nearest construction site
 actors['build'] = function(creep: Creep)
 {    
-    let site = creep.pos.findClosestByPath<ConstructionSite>(FIND_CONSTRUCTION_SITES);
-    
-    if (!site)
+    if (!creep.memory['buildSite'])
     {
-        console.log('build: no construction site found');
-        return;
+        let site = creep.pos.findClosestByPath<ConstructionSite>(FIND_CONSTRUCTION_SITES);
+        if (site)
+        {
+            creep.memory['buildSite']  = site.id;
+        }
+        else
+        {
+            console.log('build: no construction sites found');
+        }
     }
+    
+    let site = Game.getObjectById(creep.memory['buildSite']) as ConstructionSite;    
     
     let result = creep.build(site); 
     switch (result)
@@ -26,6 +33,7 @@ actors['build'] = function(creep: Creep)
             
         case ERR_INVALID_TARGET:
             console.log('build: invalid target ' + site);
+            creep.memory['buildSite'] = null;
             break;
             
         case ERR_BUSY:
@@ -103,12 +111,7 @@ actors['refill'] = function(creep: Creep)
     }
     
     let storage = Game.getObjectById(creep.memory['storage']) as Positioned&Energised;
-    if (storage == null)
-    {
-        console.log('refill: no storage found, searching...');
-    }
-    
-    if (storage.energy < (creep.carryCapacity - creep.carry.energy) && creep.memory.age > 25)
+    if (storage && storage.energy < (creep.carryCapacity - creep.carry.energy) && creep.memory.age > 25)
     {
         console.log('refill: waited too long, becoming harvester');
         reset(creep, 'harvest');
@@ -123,6 +126,11 @@ actors['refill'] = function(creep: Creep)
             
         case ERR_FULL:
             unbecome(creep);
+            break;
+            
+        case ERR_INVALID_TARGET:
+            console.log('refill: no storage found, searching...');
+            creep.memory['storage'] = null;
             break;
             
         case OK:
