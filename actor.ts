@@ -204,3 +204,10 @@ export function unbecome(creep: Creep)
     creep.memory.age = 0;
     creep.memory.act = creep.memory.was.pop();
 }
+
+export function reset(creep: Creep, role: string)
+{
+    creep.memory.age = 0;
+    creep.memory.was = [];
+    creep.memory.act = role;
+}

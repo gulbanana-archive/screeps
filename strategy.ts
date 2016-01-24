@@ -95,26 +95,27 @@ function modifyRoles(room: Room, creeps: Creep[])
     if (builders.length && !upgraders.length)
     {
         let worker = builders.pop();
-        actor.become(worker, 'upgrade');
+        actor.reset(worker, 'upgrade');
         upgraders.push(worker);
     }
     
-    // convert most upgraders to builders
+    // nothing to build? back to upgrading
     let constructionSites = room.find(FIND_CONSTRUCTION_SITES);
-    if (constructionSites.length)
-    {
-        for (let worker of _.drop(upgraders, 1))
-        {
-            actor.become(worker, 'build');
-        }
-    }
-    
-    //nothing to build? back to upgrading
-    else
+    if (!constructionSites.length)
     {
         for (let worker of builders)
         {
-            actor.become(worker, 'upgrade');
+            actor.reset(worker, 'upgrade');
+        }
+    }
+    
+    // use most workers as builders
+    else
+    {
+        for (let worker of _.drop(upgraders, 1))
+        {
+            while (worker.memory.was.length) actor.unbecome(worker);
+            actor.reset(worker, 'build');
         }
     }
 }
