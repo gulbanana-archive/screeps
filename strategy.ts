@@ -65,7 +65,7 @@ function harvester(source: Source) : Spec
     return new CSpec(body, memory);
 }
 
-function worker(storage: Positioned&Energised&Identified) : Spec
+function worker(storage: Positioned&Energised&Identified): Spec
 {    
     let capacity = util.calculateAvailableEnergy(storage.room);
     
@@ -73,7 +73,21 @@ function worker(storage: Positioned&Energised&Identified) : Spec
                capacity >= 400 ? [MOVE, MOVE, MOVE, WORK, WORK, CARRY] :
                                  [MOVE, MOVE, WORK, CARRY];
                                  
-    let memory = {age: 0, act: 'refill', was: ['upgrade'], storage: storage.id};
+    let memory: State = {age: 0, act: 'refill', was: ['upgrade'], storage: storage.id};
+    
+    return new CSpec(body, memory);
+}
+
+function soldier(room: Room): Spec
+{
+    let capacity = util.calculateAvailableEnergy(room);
+    
+    let body = capacity >= 450 ? [MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, TOUGH] :
+               capacity >= 390 ? [MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK] :
+               capacity >= 320 ? [MOVE, MOVE, MOVE, ATTACK, ATTACK, TOUGH] :
+                                 [MOVE, MOVE, ATTACK, ATTACK];
+                                 
+    let memory: State = {age: 0, act: 'fight', was: []};
     
     return new CSpec(body, memory);
 }
@@ -145,6 +159,7 @@ function planSpawns(room: Room): Spec[]
     let sources = room.find<Source>(FIND_SOURCES); 
     let harvesters = _.filter(creeps, actor.wasOriginally(['harvest'])).length;
     let workers = _.filter(creeps, actor.wasOriginally(['upgrade', 'build', 'repair'])).length;
+    let soldiers = _.filter(creeps, actor.wasOriginally(['fight'])).length;
         
     if (Memory.goals.colonise)
     {
@@ -166,6 +181,12 @@ function planSpawns(room: Room): Spec[]
         harvesters++;
     }
     
+    if (harvesters > 5 && soldiers == 0)
+    {
+        spawns.push(soldier(room));
+        soldiers++;
+    }
+    
     while (workers * 2 <= harvesters)
     {
         spawns.push(worker(room.find<Spawn>(FIND_MY_SPAWNS)[0]));
@@ -175,6 +196,7 @@ function planSpawns(room: Room): Spec[]
     while (spawns.length < room.find(FIND_MY_SPAWNS).length)
     {
         spawns.push(harvester(sources[0]));
+        harvesters++;
     }
     
     return spawns;

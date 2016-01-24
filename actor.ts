@@ -4,6 +4,7 @@ import { actors } from './actors/_actor';
 export { reset } from './actors/_actor'; // XXX
 import build from './actors/build';
 import colonist from './actors/colonist';
+import fight from './actors/fight';
 import harvest from './actors/harvest';
 import refill from './actors/refill';
 import repair from './actors/repair';
@@ -13,6 +14,7 @@ import upgrade from './actors/upgrade';
 
 actors['build'] = build;
 actors['colonist'] = colonist;
+actors['fight'] = fight; 
 actors['harvest'] = harvest; 
 actors['refill'] = refill;
 actors['repair'] = repair;
