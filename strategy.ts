@@ -32,7 +32,7 @@ function countCreeps(role: string): number
     for (let name in Game.creeps)
     {
         let creep = Game.creeps[name];
-        if (creep.memory.act == role || creep.memory.was == role) i++;
+        if ((creep.memory.was.length && creep.memory.was[0] == role) || creep.memory.act == role) i++;
     }
     
     return i;
@@ -68,6 +68,14 @@ function worker(storage: Positioned&Energised&Identified) : Spec
     return { body, memory, cost: getCost(body) };
 }
 
+function originally(role: string): (c: Creep) => boolean
+{
+    return function(c: Creep)
+    {
+        return ((c.memory.was.length && c.memory.was[0] == role) || c.memory.act == role); 
+    }
+}
+
 function modifyRoles(room: Room, creeps: Creep[])
 {   
     let workersWaitingForRefills = _.filter(creeps, c => c.memory.act == 'refill' && c.memory.age > 25);
@@ -78,8 +86,8 @@ function modifyRoles(room: Room, creeps: Creep[])
         actor.become(workersWaitingForRefills[0], 'harvest');
     }
     
-    let builders = _.filter(creeps, c => c.memory.act == 'build' || c.memory.act == 'refill' && c.memory.was == 'build');
-    let upgraders = _.filter(creeps, c => c.memory.act == 'upgrade' || c.memory.act == 'refill' && c.memory.was == 'upgrade');
+    let builders = _.filter(creeps, originally('build'));
+    let upgraders = _.filter(creeps, originally('build'));
     
     // keep at least one upgrader
     if (builders.length && !upgraders.length)
@@ -118,7 +126,7 @@ export function plan(home: Spawn): Spec[]
     let sources = home.room.find(FIND_SOURCES) as Source[]; 
     let spawns: Spec[] = [];
     
-    let harvesters = _.filter(creeps, c => c.memory.act == 'harvest' || c.memory.act == 'store').length;
+    let harvesters = _.filter(creeps, originally('harvest')).length;
     let workers = _.filter(creeps, c => c.memory.act == 'build' || c.memory.act == 'upgrade' || c.memory.act == 'refill').length;
         
     let needHarvesters = sources.length * 3;
@@ -135,10 +143,13 @@ export function plan(home: Spawn): Spec[]
         workers++;
     }
     
-    if (!spawns.length) spawns.push(harvester(sources[0]));
+    while (spawns.length < home.room.find(FIND_MY_SPAWNS).length)
+    {
+        spawns.push(harvester(sources[0]));
+    }
 
     let knownCreeps = _.map(creeps, c => c.memory.act);
-    let plannedSpawns = _.map(spawns, s => (s.memory.was ? s.memory.was : s.memory.act) + '@' + s.cost);
+    let plannedSpawns = _.map(spawns, s => (s.memory.was.length ? s.memory.was[0] : s.memory.act) + '@' + s.cost);
     Memory.plan = {creeps: knownCreeps, spawns: plannedSpawns};
 
     return spawns;

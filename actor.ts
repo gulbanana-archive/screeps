@@ -33,6 +33,7 @@ actors['build'] = function(creep: Creep)
                 break;
                 
             case OK:
+                if (creep.carry.energy == 0) become(creep, 'refill');
                 break;
                 
             default:
@@ -45,12 +46,6 @@ actors['build'] = function(creep: Creep)
 actors['harvest'] = function(creep: Creep)
 {
     let source = Game.getObjectById(creep.memory['source']) as Source;
-    
-    if (creep.carry.energy == creep.carryCapacity)
-    {
-        become(creep, 'store');
-        return;
-    }
     
     let result = creep.harvest(source);
     switch (result) 
@@ -78,6 +73,7 @@ actors['harvest'] = function(creep: Creep)
             break;
         
         case OK:
+            if (creep.carry.energy == creep.carryCapacity) become(creep, 'store');
             break;
         
         default:
@@ -99,8 +95,10 @@ actors['refill'] = function(creep: Creep)
             
         case ERR_FULL:
             unbecome(creep);
+            break;
             
         case OK:
+            if (creep.carry.energy == creep.carryCapacity) unbecome(creep);
             break;		
             
         default:
@@ -117,14 +115,27 @@ actors['store'] = function(creep: Creep)
     let storage = spawns.concat(extensions).filter(s => s.energy < s.energyCapacity);
     let target = _.head(storage);
     
-    switch (creep.transfer(target, RESOURCE_ENERGY))
+    let result = creep.transfer(target, RESOURCE_ENERGY);
+    switch (result)
     {
         case ERR_NOT_IN_RANGE:
             creep.moveTo(target);
             break;
             
-        case OK:
+        case ERR_NOT_ENOUGH_RESOURCES:
             unbecome(creep);
+            break;
+            
+        case ERR_FULL:
+            console.log('store: all targets full');
+            break;
+            
+        case OK:
+            if (target.energyCapacity - target.energy >= creep.carry.energy) unbecome(creep);
+            break;
+            
+        default:
+            console.log('store: unexpected error ' + result);
             break;
     } 
 }
@@ -132,7 +143,8 @@ actors['store'] = function(creep: Creep)
 //upgrade the room control level
 actors['upgrade'] = function(creep: Creep)
 {    
-    switch (creep.upgradeController(creep.room.controller))
+    let result = creep.upgradeController(creep.room.controller); 
+    switch (result)
     {
         case ERR_NOT_ENOUGH_RESOURCES:
             become(creep, 'refill');
@@ -141,13 +153,27 @@ actors['upgrade'] = function(creep: Creep)
         case ERR_NOT_IN_RANGE:
             creep.moveTo(creep.room.controller);
             break;
+            
+        case OK:
+            if (creep.carry.energy == 0) become(creep, 'refill');
+            break;
+            
+        default:
+            console.log('upgrade: unexpected error ' + result);
     }
 }
 
 export function work(creep: Creep)
 {
-    actors[creep.memory.act](creep);
-    creep.memory.age++;
+    try
+    {
+        actors[creep.memory.act](creep);
+        creep.memory.age++;
+    }
+    catch (ex)
+    {
+        console.log(creep.name + ": " + ex);
+    }
 }
 
 export function become(creep: Creep, role: string)

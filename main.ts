@@ -17,7 +17,7 @@ function executeSpawns(specs: strategy.Spec[])
             console.log('spawn goal cost too high');
         }
         
-        let spawner = _.head(_.filter(spawners, s => _.indexOf(usedSpawners, s)==-1 && s.spawning == null && (availableEnergy-300 + s.energy) >= spec.cost));
+        let spawner = _.head(_.filter(spawners, s => _.indexOf(usedSpawners, s)==-1 && s.canCreateCreep(spec.body) == OK));
         if (spawner)
         {
             let result = spawner.createCreep(spec.body, undefined, spec.memory);
