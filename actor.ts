@@ -3,7 +3,6 @@ import * as util from './util';
 import { actors } from './actors/_actor';
 export { reset } from './actors/_actor'; // XXX
 import build from './actors/build';
-import remoteBuild from './actors/remoteBuild';
 import colonist from './actors/colonist';
 import harvest from './actors/harvest';
 import refill from './actors/refill';
@@ -13,7 +12,6 @@ import travel from './actors/travel';
 import upgrade from './actors/upgrade';
 
 actors['build'] = build;
-actors['remoteBuild'] = remoteBuild;
 actors['colonist'] = colonist;
 actors['harvest'] = harvest; 
 actors['refill'] = refill;

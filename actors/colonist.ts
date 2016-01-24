@@ -2,12 +2,14 @@ import * as actor from './_actor';
 
 export default function(creep: Creep)
 {
+    // stock up before leaving
     if (creep.carry.energy < creep.carryCapacity)
     {
         actor.become(creep, 'refill');
         return; 
     }
     
+    // travel to the new world
     let target = creep.memory['travelTarget'];
     if (creep.room.name != target)
     {
@@ -15,6 +17,7 @@ export default function(creep: Creep)
         return;
     }
 
+    // success
     if (creep.room.controller.my)
     {
         actor.reset(creep, 'upgrade');

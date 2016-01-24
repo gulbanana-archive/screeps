@@ -78,15 +78,11 @@ function worker(storage: Positioned&Energised&Identified) : Spec
     return new CSpec(body, memory);
 }
 
-function remote(origin: Room, destinationName: string): Spec
-{
-    let capacity = util.calculateAvailableEnergy(origin);
-    
-    let body = capacity >= 500 ? [MOVE, MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY] :
-               capacity >= 400 ? [MOVE, MOVE, MOVE, WORK, WORK, CARRY] :
-                                 [MOVE, MOVE, WORK, CARRY];
+function colonist(destination: string): Spec
+{   
+    let body = [MOVE, MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY];
                                  
-    let memory: State = {age: 0, act: 'remoteBuild', was: [], remoteOrigin: origin.name, remoteDestination: destinationName};
+    let memory: State = {age: 0, act: 'colonist', was: [], travelTarget: destination};
     
     return new CSpec(body, memory);
 }
@@ -152,14 +148,14 @@ function planSpawns(room: Room): Spec[]
         
     if (Memory.goals.colonise)
     {
-        let colonists =  _.filter(creeps, actor.wasOriginally(['remoteBuild']));
+        let colonists =  _.filter(creeps, actor.wasOriginally(['colonist']));
         if (colonists.length)
         {
             Memory.goals.colonise = null;
         }
         else
         {
-            spawns.push(remote(room, Memory.goals.colonise));
+            spawns.push(colonist(Memory.goals.colonise));
         }
     }
         
