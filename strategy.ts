@@ -81,6 +81,7 @@ function planWorkers(room: Room): string[]
     
     let creeps = room.find<Creep>(FIND_MY_CREEPS);
     let workers = _.size(_.filter(creeps, util.wasOriginally(['upgrade', 'build', 'repair'])));
+    let constructionSites = room.find<ConstructionSite>(FIND_CONSTRUCTION_SITES).length;
     
     if (workers > 0)
     {
@@ -94,13 +95,12 @@ function planWorkers(room: Room): string[]
         workers--;
     }
     
-    if (workers > 0)
+    if (workers > 0 && constructionSites > 0)
     {
         result.push('build');
         workers--;
     }
-    
-    let constructionSites = room.find<ConstructionSite>(FIND_CONSTRUCTION_SITES).length;
+
     let brokenStructures = room.find<Structure>(FIND_STRUCTURES, {filter: (s: Structure) => (s.hits < s.hitsMax) && !(s.structureType == STRUCTURE_WALL && s.hits >= Memory.goals.wallCap)}).length;
     let extraRepair = Math.floor(brokenStructures/50);
     while (workers > 0)
