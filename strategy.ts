@@ -125,7 +125,7 @@ export function plan(home: Spawn): Spec[]
         
     while (harvesters < needHarvesters)
     {
-        spawns.push(harvester(sources[0], home));
+        spawns.push(harvester(sources[0]));
         harvesters++;
     }
     
@@ -135,7 +135,7 @@ export function plan(home: Spawn): Spec[]
         workers++;
     }
     
-    if (!spawns.length) spawns.push(harvester(sources[0], home));
+    if (!spawns.length) spawns.push(harvester(sources[0]));
 
     let knownCreeps = _.map(creeps, c => c.memory.act);
     let plannedSpawns = _.map(spawns, s => (s.memory.was ? s.memory.was : s.memory.act) + '@' + s.cost);

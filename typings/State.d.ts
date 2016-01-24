@@ -3,6 +3,6 @@ interface State
 {
     age: number;
     act: string;
-    was: string | string[];
+    was: string[];
     [key: string]: any;
 }
