@@ -5,7 +5,6 @@ export default function(creep: Creep)
     let target = creep.memory['travel'] as RoomPosition;
     if (!target)
     {
-        console.log('travel: no target');
         creep.memory['travel'] = null;
         actor.unbecome(creep);
         return;

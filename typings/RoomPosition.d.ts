@@ -16,4 +16,9 @@ interface RoomPosition
      * Find an object with the shortest linear distance from the given position.
      */
     findClosestByRange<T>(type: number, opts?: { filter: any }): T;
+    
+    /**
+     * Get linear range to the specified position.
+     */
+    getRangeTo(target: RoomPosition|{pos: RoomPosition}|number, y?:number): number;
 }

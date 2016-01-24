@@ -3,6 +3,24 @@ import * as util from './util';
 import * as actor from './actor';
 import * as strategy from './strategy';
 
+class CPlans
+{
+    toString()
+    {
+        let result = "";
+        for (let key in this)
+        {
+            if (key != 'toString')
+            {
+                result += key;
+                result += ': ';
+                result += (this as {[key: string]: Plan;})[key] + "\n";
+            }
+        }
+        return result;
+    }
+}
+
 function assignWorkers(room: Room, assignments: string[])
 {
     let workers = _.filter(room.find<Creep>(FIND_MY_CREEPS), actor.wasOriginally(['upgrade', 'build', 'repair']))
@@ -85,7 +103,7 @@ export function loop()
 {
     if (!Memory.goals) Memory.goals = { colonise: null, wallCap: 10000 };
     
-    if (!Memory.plans) Memory.plans = {};
+    Memory.plans = new CPlans() as {[key: string]: Plan;};
     
     for (let home of [Game.spawns['Spawn1']])
     {

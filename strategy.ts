@@ -78,16 +78,16 @@ function worker(storage: Positioned&Energised&Identified): Spec
     return new CSpec(body, memory);
 }
 
-function soldier(room: Room): Spec
+function soldier(rampart: Structure): Spec
 {
-    let capacity = util.calculateAvailableEnergy(room);
+    let capacity = util.calculateAvailableEnergy(rampart.room);
     
     let body = capacity >= 450 ? [MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, TOUGH] :
                capacity >= 390 ? [MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK] :
                capacity >= 320 ? [MOVE, MOVE, MOVE, ATTACK, ATTACK, TOUGH] :
                                  [MOVE, MOVE, ATTACK, ATTACK];
                                  
-    let memory: State = {age: 0, act: 'fight', was: []};
+    let memory: State = {age: 0, act: 'fight', was: [], travel: rampart.pos};
     
     return new CSpec(body, memory);
 }
@@ -159,7 +159,7 @@ function planSpawns(room: Room): Spec[]
     let sources = room.find<Source>(FIND_SOURCES); 
     let harvesters = _.filter(creeps, actor.wasOriginally(['harvest'])).length;
     let workers = _.filter(creeps, actor.wasOriginally(['upgrade', 'build', 'repair'])).length;
-    let soldiers = _.filter(creeps, actor.wasOriginally(['fight'])).length;
+    let soldiers = _.filter(creeps, actor.wasOriginally(['fight']));
         
     if (Memory.goals.colonise)
     {
@@ -181,10 +181,19 @@ function planSpawns(room: Room): Spec[]
         harvesters++;
     }
     
-    while (soldiers * 5 <= harvesters)
+    let ramparts = room.find<Structure>(FIND_MY_STRUCTURES, {filter:{structureType: STRUCTURE_RAMPART}});
+    for (let rampart of ramparts)
     {
-        spawns.push(soldier(room));
-        soldiers++;
+        let patrolled = false;
+        for (let soldier of soldiers)
+        {
+            if (soldier.pos.getRangeTo(rampart) < 4) patrolled = true;
+        }
+        
+        if (!patrolled)
+        {
+            spawns.push(soldier(rampart));
+        }
     }
     
     while (workers * 2 <= harvesters)
