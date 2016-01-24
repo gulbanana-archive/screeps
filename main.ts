@@ -5,19 +5,23 @@ import _ = require('lodash');
 
 function assignWorkers(room: Room, assignments: string[])
 {
+    let counts = _.countBy(assignments);
+    
     let workers = _.filter(room.find<Creep>(FIND_MY_CREEPS), util.wasOriginally(['upgrade', 'build', 'repair']))
+    let existingAssignments = workers.map(util.originalRole);
+    let existingCounts = _.countBy(existingAssignments);
     
-    if (workers.length != assignments.length)
-    {
-        console.log("assign: incorrect work item count");
-        console.log("workers: " + _.map(workers, util.originalRole));
-        console.log("assignments: " + assignments);
-        return;
-    }
+    let grow = ['upgrade', 'build', 'repair'].filter(r => (counts[r] && !existingCounts[r]) || (counts[r] > existingCounts[r]));
+    let shrink = ['upgrade', 'build', 'repair'].filter(r => (existingCounts[r] && !counts[r]) || (existingCounts[r] > counts[r]));
     
-    for (let i = 0; i < assignments.length; i++)
+    for (let g of grow)
     {
-        actor.reset(workers[i], assignments[i]);
+        for (let i = 0; i < (counts[g] - (existingCounts[g] ? existingCounts[g] : 0)); i++)
+        {
+            let candidate = _.filter(workers, util.wasOriginally(shrink))[0];
+            _.remove(workers, candidate);
+            actor.reset(candidate, g);
+        }
     }
 }
 
