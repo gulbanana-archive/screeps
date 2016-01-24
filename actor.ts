@@ -52,7 +52,21 @@ actors['build'] = function(creep: Creep)
 //harvest an energy source 
 actors['harvest'] = function(creep: Creep)
 {
-    let source = Game.getObjectById(creep.memory['source']) as Source;
+    if (!creep.memory['harvestSource'])
+    {
+        let newSource = creep.pos.findClosestByPath<Source>(FIND_SOURCES);
+        if (!newSource)
+        {
+            console.log("no path to a source, becoming worker");
+            reset(creep, 'upgrade');
+        }
+        else
+        {
+            creep.memory['harvestSource'] = newSource.id;
+        }
+    }
+    
+    let source = Game.getObjectById(creep.memory['harvestSource']) as Source;
     
     let result = creep.harvest(source);
     switch (result) 
@@ -62,17 +76,8 @@ actors['harvest'] = function(creep: Creep)
             break;
             
         case ERR_INVALID_TARGET:
-            console.log('harvest: source invalid. discovering new source...');
-            let newSource = creep.pos.findClosestByPath<Source>(FIND_SOURCES);
-            if (newSource == null)
-            {
-                console.log("no path to a source, suiciding");
-                creep.suicide();
-            }
-            else
-            {
-                creep.memory['source'] = newSource.id;
-            }
+            console.log('harvest: source invalid. searching...');
+            creep.memory['harvestSource'] = null;
             break;
             
         case ERR_BUSY:
@@ -80,8 +85,7 @@ actors['harvest'] = function(creep: Creep)
             break;
         
         case ERR_NOT_ENOUGH_RESOURCES:
-            console.log('harvest: source is empty, becoming worker');
-            reset(creep, 'upgrade');
+            console.log('harvest: source is empty');
             break;
         
         case OK:
@@ -153,7 +157,7 @@ actors['store'] = function(creep: Creep)
     
     if (!target)
     {
-        console.log('store: no targets');
+        console.log('store: no empty containers, idling');
         return;
     }
     

@@ -68,7 +68,7 @@ function harvester(source: Source) : Spec
                capacity >= 350 ? [MOVE, MOVE, MOVE, WORK, CARRY, CARRY] :
                                  [MOVE, MOVE, WORK, CARRY];
                                  
-    let memory: State = {age: 0, act: 'harvest', was: [], source: source.id};
+    let memory: State = {age: 0, act: 'harvest', was: [], harvestSource: source.id};
     
     return new CSpec(body, memory);
 }
