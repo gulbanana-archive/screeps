@@ -5,10 +5,12 @@ import _ = require('lodash');
 
 function assignWorkers(room: Room, assignments: string[])
 {
-    let counts = _.countBy(assignments);
-    
     let workers = _.filter(room.find<Creep>(FIND_MY_CREEPS), util.wasOriginally(['upgrade', 'build', 'repair']))
-    let existingAssignments = workers.map(util.originalRole);
+    let existingAssignments = workers.map(util.originalRole).sort();
+    
+    if (_.isEqual(assignments.sort(), existingAssignments.sort())) return;
+ 
+    let counts = _.countBy(assignments);   
     let existingCounts = _.countBy(existingAssignments);
     
     let grow = ['upgrade', 'build', 'repair'].filter(r => (counts[r] && !existingCounts[r]) || (counts[r] > existingCounts[r]));
