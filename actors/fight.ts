@@ -3,7 +3,9 @@ import * as actor from './_actor';
 // stand on the walls, basically, and look for enemies
 export default function(creep: Creep)
 {    
-    let enemy = creep.pos.findClosestByRange<Creep>(FIND_HOSTILE_CREEPS);
+    let enemy: Creep|Spawn|Structure = creep.pos.findClosestByRange<Creep>(FIND_HOSTILE_CREEPS);
+    if (!enemy) enemy = creep.pos.findClosestByRange<Spawn>(FIND_HOSTILE_SPAWNS);
+    if (!enemy) enemy = creep.pos.findClosestByRange<Structure>(FIND_HOSTILE_STRUCTURES);
     if (enemy)
     {
         let result = creep.attack(enemy);

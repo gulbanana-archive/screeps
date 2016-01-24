@@ -20,6 +20,8 @@ declare const STRUCTURE_WALL: string;
 
 declare const FIND_CONSTRUCTION_SITES: number;
 declare const FIND_HOSTILE_CREEPS: number;
+declare const FIND_HOSTILE_SPAWNS: number;
+declare const FIND_HOSTILE_STRUCTURES: number;
 declare const FIND_MY_CREEPS: number;
 declare const FIND_MY_SPAWNS: number;
 declare const FIND_MY_STRUCTURES: number;
