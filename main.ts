@@ -4,7 +4,7 @@ import * as actor from './actor';
 import * as strategy from './strategy';
 
 class CPlans
-{
+{   
     toString()
     {
         let result = "";
@@ -14,7 +14,7 @@ class CPlans
             {
                 result += key;
                 result += ': ';
-                result += (this as {[key: string]: Plan;})[key] + "\n";
+                result += (this as any)[key] + "\n";
             }
         }
         return result;

@@ -1,6 +1,6 @@
 import _ = require('lodash');
 import * as util from './util';
-import { actors } from './actors/_actor';
+import { actors, become } from './actors/_actor';
 export { reset } from './actors/_actor'; // XXX
 import build from './actors/build';
 import colonist from './actors/colonist';
@@ -27,7 +27,7 @@ export function act(creep: Creep)
     try
     {
         //behaviour overrides
-        if (creep.memory['travel']) actor.become(creep, 'travel'); 
+        if (creep.memory['travel']) become(creep, 'travel'); 
         
         // main action
         actors[creep.memory.act](creep);
