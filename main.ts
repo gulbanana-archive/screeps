@@ -115,3 +115,5 @@ export function loop()
 
     performRoles();
 }
+
+console.log('main: reparsed');
