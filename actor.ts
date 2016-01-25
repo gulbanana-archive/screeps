@@ -4,7 +4,6 @@ import { actors } from './actors/_actor';
 export { reset } from './actors/_actor'; // XXX
 import build from './actors/build';
 import colonist from './actors/colonist';
-import common from './actors/common';
 import fight from './actors/fight';
 import harvest from './actors/harvest';
 import refill from './actors/refill';
@@ -27,8 +26,12 @@ export function act(creep: Creep)
 {
     try
     {
-        common(creep);
-        actors[creep.memory.act](creep);        
+        //behaviour overrides
+        if (creep.memory['travel']) actor.become(creep, 'travel'); 
+        
+        // main action
+        actors[creep.memory.act](creep);
+                
         creep.memory.age++;
     }
     catch (ex)
