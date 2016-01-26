@@ -1,4 +1,4 @@
-import _ = require('lodash');
+import * as _ from 'lodash';
 
 export let actors: {[key: string]: (creep: Creep) => void} = {};
 

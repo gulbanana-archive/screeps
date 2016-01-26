@@ -1,13 +1,33 @@
+var babel = require('rollup-plugin-babel');
+
 module.exports = function(grunt) {
-    grunt.loadNpmTasks('grunt-exec');
+    grunt.loadNpmTasks("grunt-ts");
     grunt.loadNpmTasks('grunt-screeps');
+    grunt.loadNpmTasks('grunt-rollup');
 
     grunt.initConfig({
-        exec: {
-            compile: "tsc",
-            mangleRefsToActors: "sed -i s/'\\.\\/actors\\//'/g\ dist/*.js",
-            mangleActorRefs: "sed -i s/'\\.\.\\//'/g\ dist/actors/*.js",
-            mangleRefs: "sed -i s/'\\.\\//'/g\ dist/*.js dist/actors/*.js",
+        ts: {
+            default: {
+                tsconfig: true, 
+                options: {
+                    fast: 'never' // this doesn't use the tsconfig structure, and therefore omits typings/
+                }
+            }
+        },     
+        rollup: {
+            options: {
+                format: 'cjs',
+                plugins: [
+                    babel({
+                        exclude: './node_modules/**',
+                        presets: ['es2015-rollup']
+                    })
+                ]
+            },
+            files: {
+                'src' : 'build/main.js',
+                'dest': 'dist/main.js'
+            },
         },
         screeps: {
             options: {
@@ -17,10 +37,11 @@ module.exports = function(grunt) {
                 ptr: false
             },
             dist: {
-                src: ['dist/*.js', 'dist/actors/*.js']
+                src: ['dist/main.js']
             }
         }
     });
 
-    grunt.registerTask('default', ['exec', 'screeps']);
+    grunt.registerTask('build', ['ts']);
+    grunt.registerTask('push', ['build', 'rollup', 'screeps']);
 }

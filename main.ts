@@ -1,4 +1,4 @@
-import _ = require('lodash');
+import * as _ from 'lodash';
 import * as util from './util';
 import * as actor from './actor';
 import * as strategy from './strategy';
