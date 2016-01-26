@@ -24,7 +24,7 @@ module.exports = function(grunt) {
                     })
                 ]
             },
-            files: {
+            default: {
                 'src' : 'build/main.js',
                 'dest': 'dist/main.js'
             },
@@ -36,12 +36,13 @@ module.exports = function(grunt) {
                 branch: 'default',
                 ptr: false
             },
-            dist: {
+            default: {
                 src: ['dist/main.js']
             }
         }
     });
 
     grunt.registerTask('build', ['ts']);
-    grunt.registerTask('push', ['build', 'rollup', 'screeps']);
+    grunt.registerTask('dist', ['rollup', 'screeps']);
+    grunt.registerTask('default', ['build', 'dist']);
 }
