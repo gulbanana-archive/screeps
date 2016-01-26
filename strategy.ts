@@ -82,9 +82,9 @@ function soldier(rampart: Structure): Spec
 {
     let capacity = util.calculateAvailableEnergy(rampart.room);
     
-    let body = capacity >= 450 ? [MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, TOUGH] :
+    let body = capacity >= 450 ? [TOUGH, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK] :
                capacity >= 390 ? [MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK] :
-               capacity >= 320 ? [MOVE, MOVE, MOVE, ATTACK, ATTACK, TOUGH] :
+               capacity >= 320 ? [TOUGH, MOVE, MOVE, MOVE, ATTACK, ATTACK] :
                                  [MOVE, MOVE, ATTACK, ATTACK];
                                  
     let memory: State = {age: 0, act: 'fight', was: [], travel: rampart.pos};
