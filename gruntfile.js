@@ -33,7 +33,7 @@ module.exports = function(grunt) {
             options: {
                 email: process.env.SCREEPS_EMAIL,
                 password: process.env.SCREEPS_PASSWORD,
-                branch: 'test',
+                branch: 'default',
                 ptr: false
             },
             default: {

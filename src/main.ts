@@ -1,13 +1,14 @@
 import * as _ from 'lodash';
 import * as util from './util';
-import * as Agent from './agents/Agent';
 import * as strategy from './strategy';
 import CreepSpec from './CreepSpec';
+import Agent from './agents/Agent';
+import Traveller from './agents/Agent';
 
 function assignWorkers(room: Room, assignments: string[])
 {
     let workers = _.filter(room.find<Creep>(FIND_MY_CREEPS), Agent.wasOriginally(['upgrade', 'build', 'repair']))
-    let existingAssignments = workers.map(Agent.originalRole).sort();
+    let existingAssignments = workers.map(w => (w.memory.was.length ? w.memory.was[0] : w.memory.act)).sort();
     
     if (_.isEqual(assignments.sort(), existingAssignments.sort())) return;
  
@@ -23,7 +24,7 @@ function assignWorkers(room: Room, assignments: string[])
         {
             let candidate = _.filter(workers, Agent.wasOriginally(shrink))[0];
             _.remove(workers, candidate);
-            Agent.reset(candidate, g);
+            candidate.memory.act = g;
         }
     }
 }
@@ -34,7 +35,7 @@ function spawnCreep(spawner: Spawn, spec: CreepSpec)
             
     if (_.isString(result))
     {
-        console.log("spawn: creating " + Agent.originalRole(spec) + ' "' + result + '"');
+        console.log("spawn: creating " + spec + ' "' + result + '"');
     }
     else
     {
@@ -78,7 +79,21 @@ function performRoles()
     for (let name in Game.creeps)
     {
         let creep = Game.creeps[name];
-        if (!creep.spawning) Agent.act(creep);
+        
+        if (creep.spawning) continue;
+        
+        if (creep.memory['travel'] && creep.memory.act != 'travel') Agent.become(creep, Traveller);
+        
+        try
+        {            
+            let agent = Agent.wrap(creep);
+            agent.act();
+            creep.memory.age++;
+        }
+        catch (ex)
+        {
+            console.log(creep.name + ": " + ex);
+        }
     }
 }
 

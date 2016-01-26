@@ -1,5 +1,8 @@
 import * as util from './util';
-import * as Agent from './agents/Agent';
+import Agent from './agents/Agent';
+import Fighter from './agents/Fighter';
+import Harvester from './agents/Harvester';
+import Controller from './agents/Controller';
 import CreepSpec from './CreepSpec';
 import RoomPlan from './RoomPlan';
 
@@ -11,7 +14,7 @@ function harvester(source: Source) : CreepSpec
                capacity >= 350 ? [MOVE, MOVE, MOVE, WORK, CARRY, CARRY] :
                                  [MOVE, MOVE, WORK, CARRY];
                                  
-    let memory: CreepState = {age: 0, act: 'harvest', was: [], harvestSource: source.id};
+    let memory: CreepState = {age: 0, act: Harvester.role, was: [], harvestSource: source.id};
     
     return new CreepSpec(body, memory);
 }
@@ -24,7 +27,7 @@ function worker(storage: Positioned&Energised&Identified): CreepSpec
                capacity >= 400 ? [MOVE, MOVE, MOVE, WORK, WORK, CARRY] :
                                  [MOVE, MOVE, WORK, CARRY];
                                  
-    let memory: CreepState = {age: 0, act: 'refill', was: ['upgrade'], storage: storage.id};
+    let memory: CreepState = {age: 0, act: Controller.role, was: [], storage: storage.id};
     
     return new CreepSpec(body, memory);
 }
@@ -38,16 +41,7 @@ function soldier(rampart: Structure): CreepSpec
                capacity >= 320 ? [TOUGH, MOVE, MOVE, MOVE, ATTACK, ATTACK] :
                                  [MOVE, MOVE, ATTACK, ATTACK];
                                  
-    let memory: CreepState = {age: 0, act: 'fight', was: [], travel: rampart.pos};
-    
-    return new CreepSpec(body, memory);
-}
-
-function colonist(destination: string): CreepSpec
-{   
-    let body = [MOVE, MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY];
-                                 
-    let memory: CreepState = {age: 0, act: 'colonist', was: [], travelTarget: destination};
+    let memory: CreepState = {age: 0, act: Fighter.role, was: [], travel: rampart.pos};
     
     return new CreepSpec(body, memory);
 }
@@ -121,7 +115,7 @@ function planSpawns(room: Room): CreepSpec[]
         }
         else
         {
-            spawns.push(colonist(Memory.params.colonise));
+            console.log('colonist role not implemented');
         }
     }
         

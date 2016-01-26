@@ -28,6 +28,6 @@ export default class CreepSpec
 
     toString()
     {
-        return Agent.originalRole(this) + '@' + this.cost; // XXX shouldn't be speccing things as unoriginal
+        return (this.memory.was.length ? this.memory.was[0] : this.memory.act) + '@' + this.cost; // XXX shouldn't be speccing things as unoriginal
     }
 }

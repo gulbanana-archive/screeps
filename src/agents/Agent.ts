@@ -1,90 +1,96 @@
 import * as _ from 'lodash';
-import build from './build';
-import colonist from './colonist';
-import fight from './fight';
-import harvest from './harvest';
-import refill from './refill';
-import repair from './repair';
-import store from './store';
-import travel from './travel';
-import upgrade from './upgrade';
 
-let registry: {[key: string]: (creep: Creep) => void} = {};
-registry['build'] = build;
-registry['colonist'] = colonist;
-registry['fight'] = fight; 
-registry['harvest'] = harvest; 
-registry['refill'] = refill;
-registry['repair'] = repair;
-registry['store'] = store;
-registry['travel'] = travel;
-registry['upgrade'] = upgrade;
+const registry: {[key: string]: typeof Agent} = {};
 
-export function act(creep: Creep)
+export default class Agent<T extends CreepState>
 {
-    try
+    creep: Creep;
+    
+    protected get state()
     {
-        //behaviour overrides
-        if (creep.memory['travel'] && creep.memory.act != 'travel') become(creep, 'travel'); 
+        return this.creep.memory as T;
+    }
+    
+    constructor(c: Creep)
+    {
+        this.creep = c;
+    }
+    
+    protected static register(subclass: typeof Agent)
+    {
+        registry[subclass.role] = subclass;
+    }
+    
+    protected static get role() 
+    {
+        return '';
+    }
+    
+    protected become(subclass: typeof Agent)
+    {
+        Agent.become(this.creep, subclass);
+    }   
+    
+    protected unbecome()
+    {
+        this.creep.memory.age = 0;
+        this.creep.memory.act = this.creep.memory.was.pop();
         
-        // main action
-        registry[creep.memory.act](creep);
-                
-        creep.memory.age++;
+        this.act();
     }
-    catch (ex)
+    
+    protected reset(subclass: typeof Agent)
     {
-        console.log(creep.name + ": " + ex);
+        Agent.reset(this.creep, subclass);
     }
-}
-
-export function wasOriginally(roles: string[]): (c: Creep) => boolean
-{
-    return function(c: Creep)
+    
+    public act()
     {
-        for (let role of roles)
+        console.log("'" + this.creep.name + "' has undefined role '" + this.creep.memory.act + "'");
+    }
+    
+    public static wrap(c: Creep): Agent<CreepState>
+    {
+        return new registry[c.memory.act](c);
+    } 
+    
+    public static become(creep: Creep, subclass: typeof Agent)
+    {
+        if (creep.memory.act == subclass.role) return;
+        
+        if (_.keys(registry).indexOf(subclass.role) == -1)
         {
-            if ((c.memory.was && c.memory.was.length && c.memory.was[0] == role) || c.memory.act == role) return true;
-        } 
-        return false;
+            console.log('no such role ' + subclass.role);
+            return;
+        }
+        
+        creep.memory.age = 0;
+        creep.memory.was.push(creep.memory.act);
+        creep.memory.act = subclass.role;
+        
+        Agent.wrap(creep).act();
     }
-}
-
-export function originalRole(c: {memory: CreepState}): string
-{
-    return c.memory.was.length ? c.memory.was[0] : c.memory.act
-}
-
-export function become(creep: Creep, role: string)
-{
-    if (_.keys(registry).indexOf(role) == -1)
+    
+    public static wasOriginally(roles: string[]): (c: Creep) => boolean
     {
-        console.log('no such role ' + role);
-        return;
+        return function(c: Creep)
+        {
+            for (let role of roles)
+            {
+                if ((c.memory.was && c.memory.was.length && c.memory.was[0] == role) || c.memory.act == role) return true;
+            } 
+            return false;
+        }
+    }    
+    
+    public static reset(creep: Creep, subclass: typeof Agent)
+    {
+        if (creep.memory.act == subclass.role || (creep.memory.was.length && creep.memory.was[0] == subclass.role)) return;
+        
+        console.log(creep.memory.act + ' "' + creep.name + '" became ' + subclass.role);
+        
+        creep.memory.age = 0;
+        creep.memory.was = [];
+        creep.memory.act = subclass.role;
     }
-    
-    creep.memory.age = 0;
-    creep.memory.was.push(creep.memory.act);
-    creep.memory.act = role;
-    
-    registry[creep.memory.act](creep);
-}
-
-export function unbecome(creep: Creep)
-{
-    creep.memory.age = 0;
-    creep.memory.act = creep.memory.was.pop();
-    
-    registry[creep.memory.act](creep);
-}
-
-export function reset(creep: Creep, role: string)
-{
-    if (creep.memory.act == role || (creep.memory.was.length && creep.memory.was[0] == role)) return;
-    
-    console.log(creep.memory.act + ' "' + creep.name + '" became ' + role);
-    
-    creep.memory.age = 0;
-    creep.memory.was = [];
-    creep.memory.act = role;
 }
