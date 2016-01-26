@@ -1,5 +1,5 @@
 import * as util from './util';
-import * as actor from './actor';
+import * as Agent from './agents/Agent';
 import CreepSpec from './CreepSpec';
 import RoomPlan from './RoomPlan';
 
@@ -57,7 +57,7 @@ function planWorkers(room: Room): string[]
     let result: string[] = [];
     
     let creeps = room.find<Creep>(FIND_MY_CREEPS);
-    let workers = _.size(_.filter(creeps, actor.wasOriginally(['upgrade', 'build', 'repair'])));
+    let workers = _.size(_.filter(creeps, Agent.wasOriginally(['upgrade', 'build', 'repair'])));
     let constructionSites = room.find<ConstructionSite>(FIND_CONSTRUCTION_SITES).length;
     
     if (workers > 0)
@@ -108,13 +108,13 @@ function planSpawns(room: Room): CreepSpec[]
     
     let creeps = room.find<Creep>(FIND_MY_CREEPS);
     let sources = room.find<Source>(FIND_SOURCES); 
-    let harvesters = _.filter(creeps, actor.wasOriginally(['harvest'])).length;
-    let workers = _.filter(creeps, actor.wasOriginally(['upgrade', 'build', 'repair'])).length;
-    let soldiers = _.filter(creeps, actor.wasOriginally(['fight']));
+    let harvesters = _.filter(creeps, Agent.wasOriginally(['harvest'])).length;
+    let workers = _.filter(creeps, Agent.wasOriginally(['upgrade', 'build', 'repair'])).length;
+    let soldiers = _.filter(creeps, Agent.wasOriginally(['fight']));
         
     if (Memory.params.colonise)
     {
-        let colonists =  _.filter(creeps, actor.wasOriginally(['colonist']));
+        let colonists =  _.filter(creeps, Agent.wasOriginally(['colonist']));
         if (colonists.length)
         {
             Memory.params.colonise = null;

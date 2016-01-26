@@ -1,4 +1,4 @@
-import * as actor from './actor';
+import * as Agent from './agents/Agent';
 
 let segmentCosts: {[key: string]: number} = {};
 segmentCosts[MOVE] = 50;
@@ -28,6 +28,6 @@ export default class CreepSpec
 
     toString()
     {
-        return actor.originalRole(this) + '@' + this.cost; // XXX shouldn't be speccing things as unoriginal
+        return Agent.originalRole(this) + '@' + this.cost; // XXX shouldn't be speccing things as unoriginal
     }
 }

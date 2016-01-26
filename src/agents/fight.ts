@@ -1,4 +1,4 @@
-import * as actor from './_actor';
+import * as actor from './Agent';
 
 // stand on the walls, basically, and look for enemies
 export default function(creep: Creep)

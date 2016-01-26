@@ -1,4 +1,4 @@
-import * as actor from './_actor';
+import * as actor from './Agent';
 
 export default function(creep: Creep)
 {

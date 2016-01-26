@@ -1,4 +1,4 @@
-import * as actor from './_actor';
+import * as actor from './Agent';
 
 // fill extensions and spawns with stored energy 
 export default function(creep: Creep)

@@ -1,4 +1,4 @@
-import * as actor from './_actor';
+import * as actor from './Agent';
 
 //upgrade the room control level
 export default function(creep: Creep)

@@ -1,4 +1,4 @@
-import * as actor from './_actor';
+import * as actor from './Agent';
 
 //refill stored energy and return to some other action 
 export default function(creep: Creep)

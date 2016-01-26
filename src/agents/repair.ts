@@ -1,5 +1,5 @@
 import * as util from '../util';
-import * as actor from './_actor';
+import * as actor from './Agent';
 
 // find and fix broken structures
 export default function(creep: Creep)

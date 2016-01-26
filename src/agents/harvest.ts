@@ -1,4 +1,4 @@
-import * as actor from './_actor';
+import * as actor from './Agent';
 
 // harvest an energy source
 export default function(creep: Creep)

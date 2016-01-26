@@ -1,4 +1,4 @@
-import * as actor from './_actor';
+import * as actor from './Agent';
 
 // make progress on the nearest construction site
 export default function(creep: Creep)
