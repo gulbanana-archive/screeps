@@ -1,4 +1,4 @@
-interface Goals
+interface Params
 {
     colonise: string;
     wallCap: number;

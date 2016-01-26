@@ -6,7 +6,7 @@ interface Room
     controller: Structure;
     energyAvailable: number;
     energyCapacityAvailable: number;
-    memory: any;
+    memory: RoomState;
     mode: string;
     name: string;
     storage: Structure & Energised;

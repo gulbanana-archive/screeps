@@ -4,7 +4,7 @@ import * as actor from './_actor';
 // find and fix broken structures
 export default function(creep: Creep)
 {    
-    let retarget = Memory.plans[creep.room.name].priorityRepairs.pop();
+    let retarget = creep.room.memory.priorityRepairs.pop();
     if (retarget)
     {
         creep.memory['repairTarget'] = retarget;

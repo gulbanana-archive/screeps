@@ -1,0 +1,4 @@
+interface RoomState
+{
+    priorityRepairs: string[];
+}

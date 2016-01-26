@@ -2,24 +2,7 @@ import * as _ from 'lodash';
 import * as util from './util';
 import * as actor from './actor';
 import * as strategy from './strategy';
-
-class CPlans
-{   
-    toString()
-    {
-        let result = "";
-        for (let key in this)
-        {
-            if (key != 'toString')
-            {
-                result += key;
-                result += ': ';
-                result += (this as any)[key] + "\n";
-            }
-        }
-        return result;
-    }
-}
+import CreepSpec from './CreepSpec';
 
 function assignWorkers(room: Room, assignments: string[])
 {
@@ -45,7 +28,7 @@ function assignWorkers(room: Room, assignments: string[])
     }
 }
 
-function spawnCreep(spawner: Spawn, spec: Spec)
+function spawnCreep(spawner: Spawn, spec: CreepSpec)
 {
     let result = spawner.createCreep(spec.body, undefined, spec.memory);
             
@@ -71,7 +54,7 @@ function spawnCreep(spawner: Spawn, spec: Spec)
     }
 }
 
-function spawnCreeps(room: Room, specs: Spec[])
+function spawnCreeps(room: Room, specs: CreepSpec[])
 {
     let spawners = room.find<Spawn>(FIND_MY_SPAWNS);
     let availableEnergy = util.calculateAvailableEnergy(room);
@@ -101,14 +84,12 @@ function performRoles()
 
 export function loop() 
 {
-    if (!Memory.goals) Memory.goals = { colonise: null, wallCap: 10000 };
-    
-    Memory.plans = new CPlans() as {[key: string]: Plan;};
+    if (!Memory.params)
+    Memory.params = {colonise: null, wallCap: 10000};
     
     for (let home of [Game.spawns['Spawn1']])
     {
         let roomPlan = strategy.plan(home.room);
-        Memory.plans[home.room.name] = roomPlan; 
         assignWorkers(home.room, roomPlan.workers);
         spawnCreeps(home.room, roomPlan.spawns);
     }

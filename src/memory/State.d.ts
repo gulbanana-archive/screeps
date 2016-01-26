@@ -1,8 +1,8 @@
-// creep memory
 interface State
 {
-    age: number;
-    act: string;
-    was: string[];
-    [key: string]: any;
+    creeps: { [key: string]: CreepState; };
+    flags: { [key: string]: FlagState; };
+    rooms: { [key: string]: RoomState; };
+    spawns: { [key: string]: SpawnState; };
+    params: Params;
 }

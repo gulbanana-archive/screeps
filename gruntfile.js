@@ -44,5 +44,5 @@ module.exports = function(grunt) {
 
     grunt.registerTask('build', ['ts']);
     grunt.registerTask('dist', ['rollup', 'screeps']);
-    grunt.registerTask('default', ['build', 'dist']);
+    grunt.registerTask('default', ['ts', 'build', 'dist']);
 }

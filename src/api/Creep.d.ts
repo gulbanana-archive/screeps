@@ -8,7 +8,7 @@ interface Creep extends Owned, Positioned
     fatigue: number;
     hits: number;
     hitsMax: number;
-    memory: State;
+    memory: CreepState;
     name: string;
     spawning: boolean;
     ticksToLive: number;

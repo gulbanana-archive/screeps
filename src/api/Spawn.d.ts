@@ -4,7 +4,7 @@
 interface Spawn extends Structure, Energised
 {
     name: string;
-    memory: any;
+    memory: SpawnState;
     spawning: { name: string; needTime: number; remainingTime: number; };
     
     /**

@@ -7,7 +7,7 @@ export function calculateAvailableEnergy(room: Room): number
 export function realMax(s: Structure)
 {
     if (s.structureType == STRUCTURE_WALL)
-        return Math.min(s.hitsMax, Memory.goals.wallCap);
+        return Math.min(s.hitsMax, Memory.params.wallCap);
     else
         return s.hitsMax; 
 }

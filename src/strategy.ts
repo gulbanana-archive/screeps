@@ -1,58 +1,9 @@
 import * as util from './util';
 import * as actor from './actor';
+import CreepSpec from './CreepSpec';
+import RoomPlan from './RoomPlan';
 
-let segmentCosts: {[key: string]: number} = {};
-segmentCosts[MOVE] = 50;
-segmentCosts[WORK] = 100;
-segmentCosts[CARRY] = 50;
-segmentCosts[ATTACK] = 80;
-segmentCosts[RANGED_ATTACK] = 150;
-segmentCosts[HEAL] = 250;
-segmentCosts[TOUGH] = 10;
-
-class CSpec implements Spec
-{
-    body: string[];
-    memory: State;
-    cost: number;
-    
-    constructor(b: string[], m: State)
-    {
-        this.body = b;
-        this.memory = m;
-        this.cost = 0;
-        for (let segment of this.body)
-        {
-            this.cost += segmentCosts[segment];
-        }
-    }
-
-    toString()
-    {
-        return actor.originalRole(this) + '@' + this.cost;
-    }
-}
-
-class CPlan implements Plan
-{    
-    spawns: Spec[];
-    workers: string[];
-    priorityRepairs: string[];
-    
-    constructor(spawns: Spec[], workers: string[], priorityRepairs: string[])
-    {
-        this.spawns = spawns;
-        this.workers = workers;
-        this.priorityRepairs = priorityRepairs;
-    }
-    
-    toString()
-    {
-        return "{\n\tspawns: " + this.spawns + "\n\tworkers: " + this.workers +  "\n\tpriorityRepairs: " + this.priorityRepairs + "\n}"; 
-    }
-}
-
-function harvester(source: Source) : Spec
+function harvester(source: Source) : CreepSpec
 {    
     let capacity = util.calculateAvailableEnergy(source.room);
     
@@ -60,12 +11,12 @@ function harvester(source: Source) : Spec
                capacity >= 350 ? [MOVE, MOVE, MOVE, WORK, CARRY, CARRY] :
                                  [MOVE, MOVE, WORK, CARRY];
                                  
-    let memory: State = {age: 0, act: 'harvest', was: [], harvestSource: source.id};
+    let memory: CreepState = {age: 0, act: 'harvest', was: [], harvestSource: source.id};
     
-    return new CSpec(body, memory);
+    return new CreepSpec(body, memory);
 }
 
-function worker(storage: Positioned&Energised&Identified): Spec
+function worker(storage: Positioned&Energised&Identified): CreepSpec
 {    
     let capacity = util.calculateAvailableEnergy(storage.room);
     
@@ -73,12 +24,12 @@ function worker(storage: Positioned&Energised&Identified): Spec
                capacity >= 400 ? [MOVE, MOVE, MOVE, WORK, WORK, CARRY] :
                                  [MOVE, MOVE, WORK, CARRY];
                                  
-    let memory: State = {age: 0, act: 'refill', was: ['upgrade'], storage: storage.id};
+    let memory: CreepState = {age: 0, act: 'refill', was: ['upgrade'], storage: storage.id};
     
-    return new CSpec(body, memory);
+    return new CreepSpec(body, memory);
 }
 
-function soldier(rampart: Structure): Spec
+function soldier(rampart: Structure): CreepSpec
 {
     let capacity = util.calculateAvailableEnergy(rampart.room);
     
@@ -87,18 +38,18 @@ function soldier(rampart: Structure): Spec
                capacity >= 320 ? [TOUGH, MOVE, MOVE, MOVE, ATTACK, ATTACK] :
                                  [MOVE, MOVE, ATTACK, ATTACK];
                                  
-    let memory: State = {age: 0, act: 'fight', was: [], travel: rampart.pos};
+    let memory: CreepState = {age: 0, act: 'fight', was: [], travel: rampart.pos};
     
-    return new CSpec(body, memory);
+    return new CreepSpec(body, memory);
 }
 
-function colonist(destination: string): Spec
+function colonist(destination: string): CreepSpec
 {   
     let body = [MOVE, MOVE, MOVE, MOVE, WORK, WORK, CARRY, CARRY];
                                  
-    let memory: State = {age: 0, act: 'colonist', was: [], travelTarget: destination};
+    let memory: CreepState = {age: 0, act: 'colonist', was: [], travelTarget: destination};
     
-    return new CSpec(body, memory);
+    return new CreepSpec(body, memory);
 }
 
 function planWorkers(room: Room): string[]
@@ -151,9 +102,9 @@ function planWorkers(room: Room): string[]
     return result;
 }
 
-function planSpawns(room: Room): Spec[]
+function planSpawns(room: Room): CreepSpec[]
 {
-    let spawns: Spec[] = [];
+    let spawns: CreepSpec[] = [];
     
     let creeps = room.find<Creep>(FIND_MY_CREEPS);
     let sources = room.find<Source>(FIND_SOURCES); 
@@ -161,16 +112,16 @@ function planSpawns(room: Room): Spec[]
     let workers = _.filter(creeps, actor.wasOriginally(['upgrade', 'build', 'repair'])).length;
     let soldiers = _.filter(creeps, actor.wasOriginally(['fight']));
         
-    if (Memory.goals.colonise)
+    if (Memory.params.colonise)
     {
         let colonists =  _.filter(creeps, actor.wasOriginally(['colonist']));
         if (colonists.length)
         {
-            Memory.goals.colonise = null;
+            Memory.params.colonise = null;
         }
         else
         {
-            spawns.push(colonist(Memory.goals.colonise));
+            spawns.push(colonist(Memory.params.colonise));
         }
     }
         
@@ -211,11 +162,12 @@ function planSpawns(room: Room): Spec[]
     return spawns;
 }
 
-export function plan(room: Room): Plan
+export function plan(room: Room): RoomPlan
 {
     let workers = planWorkers(room);
     let spawns = planSpawns(room);
-    let priorityRepairs = room.find<Structure>(FIND_STRUCTURES, {filter: (s: Structure) => s.hits == 1}).map(s => s.id);
     
-    return new CPlan(spawns, workers, priorityRepairs);
+    room.memory.priorityRepairs = room.find<Structure>(FIND_STRUCTURES, {filter: (s: Structure) => s.hits == 1}).map(s => s.id);
+    
+    return new RoomPlan(spawns, workers);
 }
