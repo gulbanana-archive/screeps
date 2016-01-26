@@ -27,7 +27,7 @@ export function act(creep: Creep)
     try
     {
         //behaviour overrides
-        if (creep.memory['travel']) become(creep, 'travel'); 
+        if (creep.memory['travel'] && creep.memory.act != 'travel') become(creep, 'travel'); 
         
         // main action
         actors[creep.memory.act](creep);
